@@ -73,11 +73,11 @@ struct Table {
         Value value;
     };
 
-    size_t len, cap;
-    Entry *values;
 #ifdef TABLE_ALLOCATOR_TYPE
     TABLE_ALLOCATOR_TYPE allocator;
 #endif
+    size_t len, cap;
+    Entry *values;
 
     inline bool is_empty(Entry *entry) { return entry->hash == 0; }
     inline bool is_occupied(Entry *entry) { return entry->hash != 0; }

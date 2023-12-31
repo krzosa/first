@@ -1,20 +1,8 @@
 #pragma once
 
-#ifndef ARRAY_PRIVATE_FUNCTION
-    #if defined(__GNUC__) || defined(__clang__)
-        #define ARRAY_PRIVATE_FUNCTION __attribute__((unused)) static
-    #else
-        #define ARRAY_PRIVATE_FUNCTION static
-    #endif
-#endif
-
-#ifndef ARRAY_ALLOCATE
+#ifndef ARRAY_REALLOCATE
     #include <stdlib.h>
-    #define ARRAY_ALLOCATE(allocator, size) malloc(size)
-#endif
-
-#ifndef ARRAY_DEALLOCATE
-    #include <stdlib.h>
+    #define ARRAY_REALLOCATE(allocator, p, size, old_size) realloc(p, size)
     #define ARRAY_DEALLOCATE(allocator, p) free(p)
 #endif
 
@@ -28,44 +16,45 @@
     #define ARRAY_MemoryMove(dst, src, size) memmove(dst, src, size)
 #endif
 
-#ifndef ARRAY_SET_DEFAULT_ALLOCATOR
-    #define ARRAY_SET_DEFAULT_ALLOCATOR
+#ifndef ARRAY_Allocator
+    #define ARRAY_Allocator void *
+#endif
+
 // Example:
 // #define ARRAY_SET_DEFAULT_ALLOCATOR if (!allocator) allocator = global_heap;
+#ifndef ARRAY_SET_DEFAULT_ALLOCATOR
+    #define ARRAY_SET_DEFAULT_ALLOCATOR
 #endif
 
+// Iterating and removing elements
+//
+//     ForArrayRemovable(array) {
+//         ForArrayRemovablePrepare(array);
+//         if (it == 4) ForArrayRemovableDeclare();
+//     }
+//
 #ifdef DEFER_HEADER
-#define ForArrayRemovable(a) for (int __i = 0; __i < (a).len; __i += 1)
-#define ForArrayRemovablePrepare(a) \
-    auto &it = (a)[__i];            \
-    bool remove_it = false;         \
-    defer {                         \
-        if (remove_it) {            \
-            (a).ordered_remove(it); \
-            __i -= 1;               \
-        }                           \
-    }
-#define ForArrayRemovableDeclare() (remove_it = true)
+    #define ForArrayRemovable(a) for (int __i = 0; __i < (a).len; __i += 1)
+    #define ForArrayRemovablePrepare(a) \
+        auto &it = (a)[__i];            \
+        bool remove_it = false;         \
+        defer {                         \
+            if (remove_it) {            \
+                (a).ordered_remove(it); \
+                __i -= 1;               \
+            }                           \
+        }
+    #define ForArrayRemovableDeclare() (remove_it = true)
 #endif
 
-#if !defined(ARRAY_ALLOCATOR_CODE)
-    #if defined(ARRAY_ALLOCATOR_TYPE)
-        #define ARRAY_ALLOCATOR_CODE(x) x
-        #define ARRAY_ALLOCATOR_PARAM ARRAY_ALLOCATOR_TYPE allocator,
-    #else
-        #define ARRAY_ALLOCATOR_CODE(x)
-        #define ARRAY_ALLOCATOR_PARAM
-    #endif
-#endif
-
-#if !defined(For)
-#define For2(array,it) for(auto &it : (array))
-#define For(array) For2(array,it)
+#ifndef For
+    #define For2(it, array) for(auto &it : (array))
+    #define For(array) For2(it, array)
 #endif
 
 template <class T>
 struct Array {
-    ARRAY_ALLOCATOR_CODE(ARRAY_ALLOCATOR_TYPE allocator;)
+    ARRAY_Allocator allocator;
     T *data;
     int cap, len;
 
@@ -81,8 +70,8 @@ struct Array {
     bool is_first(T &item) { return &item == first(); }
     bool is_last(T &item) { return &item == last(); }
 
-    bool contains(T *item) {
-        bool result = item >= data && item < data + len;
+    bool contains(T &item) {
+        bool result = &item >= data && &item < data + len;
         return result;
     }
 
@@ -154,24 +143,19 @@ struct Array {
         if (size > cap) {
             ARRAY_SET_DEFAULT_ALLOCATOR;
 
-            void *p = ARRAY_ALLOCATE(allocator, size * sizeof(T));
+            void *p = ARRAY_REALLOCATE(allocator, data, size * sizeof(T), cap * sizeof(T));
             ARRAY_ASSERT(p);
-
-            if (data) {
-                ARRAY_MemoryMove(p, data, len * sizeof(T));
-                ARRAY_DEALLOCATE(allocator, data);
-            }
 
             data = (T *)p;
             cap = size;
         }
     }
 
-    void init(ARRAY_ALLOCATOR_PARAM int size) {
+    void init(ARRAY_Allocator allocator, int size) {
         len = 0;
         cap = 0;
         data = 0;
-        ARRAY_ALLOCATOR_CODE(this->allocator = allocator;)
+        this->allocator = allocator;
         reserve(size);
     }
 
@@ -190,6 +174,11 @@ struct Array {
         item = data[--len];
     }
 
+    void unordered_remove_index(int index) {
+        ARRAY_ASSERT(index >= 0 && index < len);
+        data[index] = data[--len];
+    }
+
     int get_index(const T &item) {
         ptrdiff_t index = (ptrdiff_t)(&item - data);
         ARRAY_ASSERT(index >= 0 && index < len);
@@ -201,8 +190,11 @@ struct Array {
         ARRAY_ASSERT(len > 0);
         ARRAY_ASSERT(&item >= begin() && &item < end());
         int index = get_index(item);
-        ARRAY_ASSERT(index >= 0 && index < len);
+        ordered_remove_index(index);
+    }
 
+    void ordered_remove_index(int index) {
+        ARRAY_ASSERT(index >= 0 && index < len);
         int right_len = len - index - 1;
         ARRAY_MemoryMove(data + index, data + index + 1, right_len * sizeof(T));
         len -= 1;
@@ -230,9 +222,9 @@ struct Array {
         len = cap = 0;
     }
 
-    Array<T> exact_copy(ARRAY_ALLOCATOR_CODE(ARRAY_ALLOCATOR_TYPE *allocator)) {
+    Array<T> exact_copy(ARRAY_Allocator allocator) {
         Array result = {};
-        ARRAY_ALLOCATOR_CODE(result.allocator = allocator;)
+        result.allocator = allocator;
         result.reserve(cap);
 
         ARRAY_MemoryMove(result.data, data, sizeof(T) * len);
@@ -240,7 +232,7 @@ struct Array {
         return result;
     }
 
-    Array<T> tight_copy(ARRAY_ALLOCATOR_CODE(ARRAY_ALLOCATOR_TYPE *allocator)) {
+    Array<T> tight_copy(ARRAY_Allocator allocator) {
         Array result = {};
         ARRAY_ALLOCATOR_CODE(result.allocator = allocator;)
         result.reserve(len);

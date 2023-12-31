@@ -21,6 +21,8 @@
     #include "table.hpp"
     #define ARRAY_ASSERT IO_Assert
     #define ARRAY_ALLOCATOR_TYPE M_Allocator
+    #define ARRAY_REALLOCATE(allocator, p, size, old_size) M_ReallocNonZeroed(allocator, p, size, old_size)
+    #define ARRAY_DEALLOCATE(allocator, p) M_Dealloc(allocator, p)
     #define ARRAY_SET_DEFAULT_ALLOCATOR \
         if (!allocator.p) allocator = M_GetSystemAllocator();
     #include "array.hpp"
