@@ -1,4 +1,5 @@
-#define DEFER_HEADER
+#pragma once
+
 template <typename T>
 struct DEFER_ExitScope {
     T lambda;
