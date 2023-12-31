@@ -1,8 +1,14 @@
 on: [push]
 jobs:
-  run-and-compile:
+  run-and-compile-ubuntu:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - run: sudo apt install clang
-      - run: sudo ./build.sh
+      - run: sudo source build.sh
+  run-and-compile-windows:
+    runs-on: windows-latest
+    steps:
+        - uses: TheMrMilchmann/setup-msvc-dev@v3
+        with:
+          arch: x64
