@@ -14,7 +14,6 @@ jobs:
           uses: TheMrMilchmann/setup-msvc-dev@v3.0.0
           with:
             arch: x64
-        - run: dir
-          shell: cmd
+        - uses: actions/checkout@v4
         - run: call build.bat
           shell: cmd
