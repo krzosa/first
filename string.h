@@ -1,5 +1,4 @@
-#ifndef S8_HEADER
-#define S8_HEADER
+#pragma once
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -115,5 +114,3 @@ S8_API S8_List S8_CopyList(S8_Allocator allocator, S8_List a);
 S8_API S8_List S8_ConcatLists(S8_Allocator allocator, S8_List a, S8_List b);
 S8_API S8_Node *S8_AddNode(S8_Allocator allocator, S8_List *list, S8_String string);
 S8_API S8_String S8_AddF(S8_Allocator allocator, S8_List *list, const char *str, ...);
-
-#endif // S8_HEADER

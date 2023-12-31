@@ -1,5 +1,4 @@
-#ifndef IO_HEADER
-#define IO_HEADER
+#pragma once
 #include <stdbool.h>
 
 #ifndef IO_API
@@ -72,4 +71,3 @@ IO_API void IO_OutputMessage(char *str, int len);
 IO_API IO_ErrorResult IO_OutputError(char *str, int len);
 IO_API void IO_Exit(int error_code);
 IO_API bool IO_IsDebuggerPresent(void);
-#endif

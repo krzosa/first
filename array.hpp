@@ -1,4 +1,4 @@
-// #define ARRAY_ALLOCATOR_TYPE Allocator
+#pragma once
 
 #ifndef ARRAY_PRIVATE_FUNCTION
     #if defined(__GNUC__) || defined(__clang__)

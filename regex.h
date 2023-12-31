@@ -1,5 +1,4 @@
-#ifndef RE_HEADER
-#define RE_HEADER
+#pragma once
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -92,5 +91,3 @@ RE_API RE_Match RE3_FindAgain(RE_Regex *regex, char *string, RE_Int len, RE_Matc
 RE_API RE_Int RE3_MatchFront(RE_Regex *regex, char *string, RE_Int len, char *string_front);
 RE_API RE_Regex *RE1_Parse(char *buff, RE_Int buffsize, char *string);
 RE_API RE_Regex *RE2_Parse(char *buff, RE_Int buffsize, char *string, RE_Int len);
-
-#endif // RE_HEADER

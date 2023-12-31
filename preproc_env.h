@@ -1,6 +1,4 @@
-#ifndef PREPROC_ENV_HEADER
-#define PREPROC_ENV_HEADER
-
+#pragma once
 #ifndef _CRT_SECURE_NO_WARNINGS
     #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -86,5 +84,3 @@
 //     #pragma clang diagnostic push
 //     #pragma clang diagnostic ignored "-Wmicrosoft-enum-forward-reference"
 // #endif
-
-#endif // PREPROC_ENV_HEADER

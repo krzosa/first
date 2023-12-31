@@ -1,5 +1,4 @@
-#ifndef OS_FS_HEADER
-#define OS_FS_HEADER
+#pragma once
 
 #ifndef OS_API
     #ifdef __cplusplus
@@ -63,4 +62,3 @@ OS_API S8_String OS_ListDirRegexAsString(MA_Arena *arena, S8_String path, unsign
 OS_API bool OS_ExpandIncludesList(MA_Arena *arena, S8_List *out, S8_String filepath);
 OS_API S8_String OS_ExpandIncludes(MA_Arena *arena, S8_String filepath);
 OS_API bool WIN_EnableTerminalColors(void);
-#endif // OS_FS_HEADER

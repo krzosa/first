@@ -1,5 +1,4 @@
-#ifndef UTF_HEADER
-#define UTF_HEADER
+#pragma once
 #include <stdint.h>
 typedef struct UTF32_Result UTF32_Result;
 typedef struct UTF8_Result UTF8_Result;
@@ -51,4 +50,3 @@ UTF_API UTF8_Iter UTF8_IterateEx(char *str, int len);
 UTF_API UTF8_Iter UTF8_Iterate(char *str);
 
 #define UTF8_For(name, str, len) for (UTF8_Iter name = UTF8_IterateEx(str, (int)len); name.item; UTF8_Advance(&name))
-#endif // UTF_HEADER

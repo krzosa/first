@@ -1,6 +1,4 @@
-#ifndef LIB_LOAD_HEADER
-#define LIB_LOAD_HEADER
-
+#pragma once
 typedef void *LIB_Library;
 
 LIB_Library LIB_LoadLibrary(char *str);
@@ -9,6 +7,4 @@ bool LIB_UnloadLibrary(LIB_Library lib);
 
 #ifndef LIB_EXPORT
     #define LIB_EXPORT __declspec(dllexport)
-#endif
-
 #endif

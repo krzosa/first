@@ -9,6 +9,11 @@
 #define MA_GIB(x) (MA_MIB(x) * 1024ull)
 #define MA_TIB(x) (MA_GIB(x) * 1024ull)
 
+typedef struct MV_Memory MV_Memory;
+typedef struct MA_Checkpoint MA_Checkpoint;
+typedef struct MA_Arena MA_Arena;
+typedef struct M_Allocator M_Allocator;
+
 #ifndef MA_DEFAULT_RESERVE_SIZE
     #define MA_DEFAULT_RESERVE_SIZE MA_GIB(1)
 #endif
@@ -69,12 +74,7 @@ typedef enum M_AllocatorOp {
     M_AllocatorOp_Deallocate,
 } M_AllocatorOp;
 
-typedef struct MV_Memory MV_Memory;
-typedef struct MA_Checkpoint MA_Checkpoint;
-typedef struct MA_Arena MA_Arena;
-typedef struct M_Allocator M_Allocator;
 typedef void *M_AllocatorProc(void *allocator, M_AllocatorOp kind, void *p, size_t size);
-
 struct M_Allocator {
     void *obj;
     void *(*p)(void *allocator, M_AllocatorOp kind, void *p, size_t size);

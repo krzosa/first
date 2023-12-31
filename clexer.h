@@ -1,5 +1,4 @@
-#ifndef CL_HEADER
-#define CL_HEADER
+#pragma once
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -494,5 +493,3 @@ CL_INLINE CL_Token *CL_MatchIdentifier(CL_Tokens *tokens, char *str) {
     }
     return 0;
 }
-
-#endif // CL_HEADER

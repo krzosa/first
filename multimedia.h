@@ -1,5 +1,4 @@
-#ifndef MU_HEADER
-#define MU_HEADER
+#pragma once
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -367,5 +366,3 @@ typedef struct MU_Event {
 
 
     */
-
-#endif // MU_HEADER
