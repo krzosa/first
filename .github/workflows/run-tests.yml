@@ -14,4 +14,5 @@ jobs:
           uses: TheMrMilchmann/setup-msvc-dev@v3.0.0
           with:
             arch: x64
-        - run: cmd.exe build.bat
+        - run: build.bat
+          shell: cmd
