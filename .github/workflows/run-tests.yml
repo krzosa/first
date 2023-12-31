@@ -5,4 +5,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: sudo apt install clang
-      - run: ls
+      - run: ./build.sh
