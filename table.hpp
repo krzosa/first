@@ -11,15 +11,16 @@
 
         Hash 0 is reserved for empty hash table entry
 */
-
-// #define TABLE_ALLOCATOR_TYPE Allocator
-
 #ifndef TABLE_PRIVATE_FUNCTION
     #if defined(__GNUC__) || defined(__clang__)
         #define TABLE_PRIVATE_FUNCTION __attribute__((unused)) static
     #else
         #define TABLE_PRIVATE_FUNCTION static
     #endif
+#endif
+
+#ifndef TABLE_Allocator
+#define TABLE_Allocator void *
 #endif
 
 #ifndef TABLE_ALLOCATE
@@ -74,9 +75,7 @@ struct Table {
         Value value;
     };
 
-#ifdef TABLE_ALLOCATOR_TYPE
-    TABLE_ALLOCATOR_TYPE allocator;
-#endif
+    TABLE_Allocator allocator;
     size_t len, cap;
     Entry *values;
 
