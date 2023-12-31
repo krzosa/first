@@ -1,14 +1,4 @@
-#include "../io.c"
-#define MA_ASSERT(x) IO_Assert(x)
-#include "../arena.c"
-#include "../defer.hpp"
-#define ARRAY_REALLOCATE(allocator, p, size, old_size) M_ReallocNonZeroed(allocator, p, size, old_size)
-#define ARRAY_DEALLOCATE(allocator, p) M_Dealloc(allocator, p)
-#define ARRAY_Allocator M_Allocator
-#define ARRAY_SET_DEFAULT_ALLOCATOR \
-    if (!allocator.p) allocator = M_GetSystemAllocator();
-#include "../array.hpp"
-
+#include "../core.c"
 void TestExclusiveArenaBackedArray() {
     MA_Scratch scratch;
     MA_Arena ex = MA_Create();
@@ -105,7 +95,7 @@ void TestReverseLoop() {
 
     int i = 99;
     For(array.reverse()) {
-        assert(it == i--);
+        IO_Assert(it == i--);
     }
 
     array.dealloc();

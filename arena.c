@@ -100,7 +100,7 @@ MA_API void MA_SetAlignment(MA_Arena *arena, int alignment) {
 }
 
 MA_API uint8_t *MA_GetTop(MA_Arena *a) {
-    MA_ASSERT(a->memory.data);
+    MA_ASSERT(a->memory.data); // arena needs to be inited
     return a->memory.data + a->len;
 }
 
