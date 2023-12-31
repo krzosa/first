@@ -13,7 +13,7 @@
     #include <stdio.h>
     #include <stdlib.h>
 
-OS_API bool WIN_EnableTerminalColors(void) {
+OS_API bool OS_EnableTerminalColors(void) {
     // Enable color terminal output
     {
         // Set output mode to handle virtual terminal sequences
@@ -38,39 +38,6 @@ OS_API bool WIN_EnableTerminalColors(void) {
         }
     }
     return false;
-}
-
-OS_API void DEV_SetWorkingDir(void) {
-    // Enable color terminal output
-    {
-        // Set output mode to handle virtual terminal sequences
-        HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-        if (hOut != INVALID_HANDLE_VALUE) {
-            DWORD dwMode = 0;
-            if (GetConsoleMode(hOut, &dwMode)) {
-                dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-                if (SetConsoleMode(hOut, dwMode)) {
-                    // COLOR CODES ENABLED
-                }
-                else {
-                    IO_Printf("Failed to enable colored terminal output C\n");
-                }
-            }
-            else {
-                IO_Printf("Failed to enable colored terminal output B\n");
-            }
-        }
-        else {
-            IO_Printf("Failed to enable colored terminal output A\n");
-        }
-    }
-
-    MA_Checkpoint scratch = MA_GetScratch();
-    S8_String working_dir = OS_GetWorkingDir(scratch.arena);
-    if (S8_EndsWith(working_dir, S8_Lit("build/"), S8_IGNORE_CASE)) {
-        OS_SetWorkingDir(S8_Lit(".."));
-    }
-    MA_ReleaseScratch(scratch);
 }
 
 OS_API bool OS_IsAbsolute(S8_String path) {
@@ -419,6 +386,50 @@ OS_API OS_Date OS_GetDate(void) {
     return result;
 }
 
+#else
+OS_API bool OS_EnableTerminalColors(void) { return true; }
+OS_API bool OS_IsAbsolute(S8_String path) { return false; }
+OS_API S8_String OS_GetExePath(MA_Arena *arena) {
+    S8_String s = {0};
+    return s;
+}
+OS_API S8_String OS_GetExeDir(MA_Arena *arena) {
+    S8_String s = {0};
+    return s;
+}
+OS_API S8_String OS_GetWorkingDir(MA_Arena *arena) {
+    S8_String s = {0};
+    return s;
+}
+OS_API void OS_SetWorkingDir(S8_String path) {}
+OS_API S8_String OS_GetAbsolutePath(MA_Arena *arena, S8_String relative) {
+    S8_String s = {0};
+    return s;
+}
+OS_API bool OS_FileExists(S8_String path) { return false; }
+OS_API bool OS_IsDir(S8_String path) { return false; }
+OS_API bool OS_IsFile(S8_String path) { return false; }
+OS_API double OS_GetTime(void) { return 0.0; }
+OS_API S8_List OS_ListDir(MA_Arena *arena, S8_String path, unsigned flags) {
+    S8_List s = {0};
+    return s;
+}
+OS_API OS_Result OS_MakeDir(S8_String path) { return OS_FAILURE; }
+OS_API OS_Result OS_CopyFile(S8_String from, S8_String to, bool overwrite) { return OS_FAILURE; }
+OS_API OS_Result OS_DeleteFile(S8_String path) { return OS_FAILURE; }
+OS_API OS_Result OS_DeleteDir(S8_String path, unsigned flags) { return OS_FAILURE; }
+OS_API OS_Result OS_AppendFile(S8_String path, S8_String string) { return OS_FAILURE; }
+OS_API OS_Result OS_WriteFile(S8_String path, S8_String string) { return OS_FAILURE; }
+OS_API S8_String OS_ReadFile(MA_Arena *arena, S8_String path) {
+    S8_String s = {0};
+    return s;
+}
+OS_API int OS_SystemF(const char *string, ...) { return 0; }
+OS_API int64_t OS_GetFileModTime(S8_String file) { return 0; }
+OS_API OS_Date OS_GetDate(void) {
+    OS_Date s = {0};
+    return s;
+}
 #endif
 
 OS_API S8_String UTF_CreateStringFromWidechar(MA_Arena *arena, wchar_t *wstr, int64_t wsize) {

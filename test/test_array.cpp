@@ -1,7 +1,6 @@
 #include "../io.c"
 #define MA_ASSERT(x) IO_Assert(x)
 #include "../arena.c"
-
 #include "../defer.hpp"
 #define ARRAY_REALLOCATE(allocator, p, size, old_size) M_ReallocNonZeroed(allocator, p, size, old_size)
 #define ARRAY_DEALLOCATE(allocator, p) M_Dealloc(allocator, p)

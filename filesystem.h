@@ -33,7 +33,6 @@ struct OS_Date {
     uint32_t milliseconds;
 };
 
-OS_API void DEV_SetWorkingDir(void);
 OS_API bool OS_IsAbsolute(S8_String path);
 OS_API S8_String OS_GetExePath(MA_Arena *arena);
 OS_API S8_String OS_GetExeDir(MA_Arena *arena);
@@ -61,4 +60,4 @@ OS_API S8_List OS_ListDirRegex(MA_Arena *arena, S8_String path, unsigned flags, 
 OS_API S8_String OS_ListDirRegexAsString(MA_Arena *arena, S8_String path, unsigned flags, char *regex);
 OS_API bool OS_ExpandIncludesList(MA_Arena *arena, S8_List *out, S8_String filepath);
 OS_API S8_String OS_ExpandIncludes(MA_Arena *arena, S8_String filepath);
-OS_API bool WIN_EnableTerminalColors(void);
+OS_API bool OS_EnableTerminalColors(void);
