@@ -112,11 +112,27 @@ void TestReverseLoop() {
     array.dealloc();
 }
 
+void TestCopy() {
+    MA_Scratch scratch;
+    auto a = GenArray();
+    auto b = a.tight_copy(scratch);
+    auto c = a.copy(scratch);
+
+    int i = 0;
+    For(b) IO_Assert(it == i++);
+    i = 0;
+    For(c) IO_Assert(it == i++);
+
+    IO_Assert(b.cap == b.len && b.len == a.len);
+    IO_Assert(a.len == c.len && a.cap == c.cap);
+}
+
 int main() {
     TestExclusiveArenaBackedArray();
     TestRemoveForLoop();
     TestBasic();
     TestReverseLoop();
+    TestCopy();
 
     return 0;
 }

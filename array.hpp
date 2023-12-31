@@ -62,10 +62,6 @@ struct Array {
         ARRAY_ASSERT(index >= 0 && index < len);
         return data[index];
     }
-    T &operator[](long long index) {
-        ARRAY_ASSERT(index >= 0 && index < len);
-        return data[index];
-    }
 
     bool is_first(T &item) { return &item == first(); }
     bool is_last(T &item) { return &item == last(); }
@@ -81,7 +77,7 @@ struct Array {
         return (int)offset;
     }
 
-    void add(T item) {
+    void add(const T &item) {
         try_growing();
         data[len++] = item;
     }
@@ -222,7 +218,7 @@ struct Array {
         len = cap = 0;
     }
 
-    Array<T> exact_copy(ARRAY_Allocator allocator) {
+    Array<T> copy(ARRAY_Allocator allocator) {
         Array result = {};
         result.allocator = allocator;
         result.reserve(cap);
@@ -234,7 +230,7 @@ struct Array {
 
     Array<T> tight_copy(ARRAY_Allocator allocator) {
         Array result = {};
-        ARRAY_ALLOCATOR_CODE(result.allocator = allocator;)
+        result.allocator = allocator;
         result.reserve(len);
 
         ARRAY_MemoryMove(result.data, data, sizeof(T) * len);

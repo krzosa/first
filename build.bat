@@ -14,6 +14,13 @@ set RELEASE_LINE=%RELEASE% %WRN% %COMMON% -link -incremental:no %LINK_RELEASE%
 mkdir build
 cd build
 
+
+cl.exe  -Fe:test_table.exe ../test/test_table.cpp %DEBUG_LINE%
+if %errorlevel% neq 0 exit /b %errorlevel%
+test_table.exe
+if %errorlevel% neq 0 exit /b %errorlevel%
+
+
 cl.exe  -Fe:test_array.exe ../test/test_array.cpp %DEBUG_LINE%
 if %errorlevel% neq 0 exit /b %errorlevel%
 test_array.exe

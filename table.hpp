@@ -57,6 +57,7 @@ TABLE_PRIVATE_FUNCTION uint64_t TABLE__HashBytes(void *data, unsigned size) {
 #endif
 
 #define TABLE__WRAP_AROUND_POWER_OF_2(x, pow2) (((x) & ((pow2)-1llu)))
+#define TABLE__IS_POW2(x) (((x) & ((x)-1)) == 0)
 
 TABLE_PRIVATE_FUNCTION int TABLE_CStringLen(char *str) {
     int i = 0;
@@ -79,11 +80,24 @@ struct Table {
     size_t len, cap;
     Entry *values;
 
+    static const size_t max_load_factor = 80;
+    static const size_t min_load_factor = 50;
+    static const size_t significant_distance = 8;
+
+    // load factor calculation was rearranged
+    // to get rid of division:
+    //> 100 * len / cap = load_factor
+    //> len * 100 = load_factor * cap
+    inline bool reached_load_factor(size_t lfactor) {
+        return (len + 1) * 100 >= lfactor * cap;
+    }
+
     inline bool is_empty(Entry *entry) { return entry->hash == 0; }
     inline bool is_occupied(Entry *entry) { return entry->hash != 0; }
 
     void reserve(size_t size) {
         TABLE_ASSERT(size > cap && "New size is smaller then original size");
+        TABLE_ASSERT(TABLE__IS_POW2(size));
         TABLE_SET_DEFAULT_ALLOCATOR;
 
         Entry *old_values = values;
@@ -130,14 +144,6 @@ struct Table {
             if (i == index) return 0;
         }
         TABLE_ASSERT(!"Invalid codepath");
-    }
-
-    // load factor calculation was rearranged
-    // to get rid of division:
-    //> 100 * len / cap = load_factor
-    //> len * 100 = load_factor * cap
-    inline bool reached_load_factor(size_t lfactor) {
-        return (len + 1) * 100 >= lfactor * cap;
     }
 
     void insert(uint64_t key, const Value &value) {
@@ -189,6 +195,7 @@ struct Table {
         Entry *entry = get_table_entry(key);
         entry->hash = 0;
         entry->distance = 0;
+        len -= 1;
     }
 
     Value *get(uint64_t key) {
@@ -218,12 +225,9 @@ struct Table {
     }
 
     void dealloc() {
-        COR_DEALLOCATE(allocator, values);
+        TABLE_DEALLOCATE(allocator, values);
         len = 0;
         cap = 0;
         values = 0;
     }
-    static const size_t max_load_factor = 80;
-    static const size_t min_load_factor = 50;
-    static const size_t significant_distance = 8;
 };
