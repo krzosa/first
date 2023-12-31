@@ -5,7 +5,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: sudo apt install clang
-      - run: sudo source build.sh
+      - run: chmod +x build.sh
+      - run: ./build.sh
   run-and-compile-windows:
     runs-on: windows-latest
     steps:
@@ -13,3 +14,4 @@ jobs:
           uses: TheMrMilchmann/setup-msvc-dev@v3.0.0
           with:
             arch: x64
+        - run: call build.bat
