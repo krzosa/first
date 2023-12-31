@@ -116,9 +116,10 @@ MA_API void            MA_InitEx(MA_Arena *a, size_t reserve);
 MA_API void            MA_Init(MA_Arena *a);
 MA_API MA_Arena        MA_Create();
 MA_API void            MA_MakeSureInitialized(MA_Arena *a);
-MA_API MA_Arena *      MA_Bootstrap(void);
 MA_API void            MA_InitFromBuffer(MA_Arena *arena, void *buffer, size_t size);
 MA_API MA_Arena        MA_MakeFromBuffer(void *buffer, size_t size);
+MA_API MA_Arena *      MA_Bootstrap(void);
+MA_API M_Allocator     MA_BootstrapExclusive(void);
 MA_API MA_Arena        MA_PushArena(MA_Arena *arena, size_t size);
 
 MA_API void *          MA_PushSizeNonZeroed(MA_Arena *a, size_t size);
@@ -154,6 +155,7 @@ MA_API void *          M_Alloc(M_Allocator allocator, size_t size);
 MA_API void *          M_AllocCopy(M_Allocator allocator, void *p, size_t size);
 MA_API void *          M_ReallocNonZeroed(M_Allocator allocator, void *p, size_t size, size_t old_size);
 MA_API void            M_Dealloc(M_Allocator allocator, void *p);
+
 MA_API M_Allocator     M_GetSystemAllocator(void);
 MA_API M_Allocator     MA_GetExclusiveAllocator(MA_Arena *arena);
 MA_API M_Allocator     MA_GetAllocator(MA_Arena *arena);

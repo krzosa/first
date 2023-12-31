@@ -156,6 +156,13 @@ MA_API MA_Arena *MA_Bootstrap(void) {
     return arena;
 }
 
+MA_API M_Allocator MA_BootstrapExclusive(void) {
+    MA_Arena bootstrap_arena = {0};
+    MA_Arena *arena = MA_PushStruct(&bootstrap_arena, MA_Arena);
+    *arena = bootstrap_arena;
+    return MA_GetExclusiveAllocator(arena);
+}
+
 MA_API void MA_InitFromBuffer(MA_Arena *arena, void *buffer, size_t size) {
     arena->memory.data = (uint8_t *)buffer;
     arena->memory.commit = size;
@@ -285,10 +292,11 @@ MA_API void *MA_AllocatorProc(void *allocator, M_AllocatorOp kind, void *p, size
 MA_API void *MA_ExclusiveAllocatorProc(void *allocator, M_AllocatorOp kind, void *p, size_t size, size_t old_size) {
     MA_Arena *arena = (MA_Arena *)allocator;
     if (kind == M_AllocatorOp_Reallocate) {
-        if (size > arena->len) {
-            size_t size_to_push = size - arena->len;
-            MA_PushSizeNonZeroed(arena, size_to_push);
-            return arena->memory.data;
+        if (size > old_size) {
+            size_t size_to_push = size - old_size;
+            void *result = MA_PushSizeNonZeroed(arena, size_to_push);
+            if (!p) p = result;
+            return p;
         }
     }
 

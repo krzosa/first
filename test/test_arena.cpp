@@ -48,8 +48,32 @@ void TestCreateAllocate() {
     MA_DeallocateArena(&created_arena);
 }
 
+void TestBootstrap() {
+    MA_Arena *arena = MA_Bootstrap();
+    void *r0 = MA_PushSize(arena, 1024);
+    void *r1 = MA_PushSize(arena, 1024);
+    IO_Assert(arena->len >= 2048);
+    IO_Assert(r0 != r1);
+    MA_DeallocateArena(arena);
+}
+
+void TestBootstrapExclusive() {
+    Array<int> v = {MA_BootstrapExclusive()};
+    v.add(0);
+    int *ptr = &v[0];
+    for (int i = 1; i < 1000; i += 1) {
+        IO_Assert(&v[0] == ptr);
+        v.add(i);
+    }
+    int i = 0;
+    For(v) IO_Assert(it == i++);
+    v.dealloc();
+}
+
 int main() {
     TestScratch();
     TestBuffer();
     TestCreateAllocate();
+    TestBootstrap();
+    TestBootstrapExclusive();
 }
