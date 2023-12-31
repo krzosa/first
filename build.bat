@@ -14,9 +14,13 @@ set RELEASE_LINE=%RELEASE% %WRN% %COMMON% -link -incremental:no %LINK_RELEASE%
 mkdir build
 cd build
 cl.exe  -Fe:cpp_debug.exe ../test/main.cpp %DEBUG_LINE%
+if %errorlevel% neq 0 exit /b %errorlevel%
 cl.exe  -Fe:cpp_release.exe ../test/main.cpp %RELEASE_LINE%
+if %errorlevel% neq 0 exit /b %errorlevel%
 cl.exe  -Fe:c_debug.exe ../test/main.c %DEBUG_LINE%
+if %errorlevel% neq 0 exit /b %errorlevel%
 cl.exe  -Fe:main_core_as_header.exe ../core.c ../test/main_core_as_header.cpp %DEBUG_LINE%
+if %errorlevel% neq 0 exit /b %errorlevel%
 cd ..
 
 rem rtc1 - runtime error checks
