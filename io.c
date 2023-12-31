@@ -1,4 +1,5 @@
 #include "io.h"
+#include <stdarg.h>
 
 #ifndef IO_SNPRINTF
     #include <stdio.h>
