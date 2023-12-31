@@ -3,6 +3,6 @@ jobs:
   run-and-compile:
     runs-on: ubuntu-latest
     steps:
-      uses: actions/checkout@v4
-      run: apt install clang
-      run: ls
+      - uses: actions/checkout@v4
+      - run: apt install clang
+      - run: ls
