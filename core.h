@@ -15,6 +15,7 @@
 #ifdef __cplusplus
     #include "defer.hpp"
     #define TABLE_ASSERT IO_Assert
+    #define TABLE_ALLOCATOR_TYPE M_Allocator
     #define TABLE_SET_DEFAULT_ALLOCATOR \
         if (!allocator.p) allocator = M_GetSystemAllocator();
     #include "table.hpp"
