@@ -118,12 +118,12 @@ struct Array {
         return ref;
     }
 
-	T *alloc_multiple(int size) {
-		try_growing_to_fit_item_count(size);
-		T *result = data + len;
-		len += size;
-		return result;
-	}
+    T *alloc_multiple(int size) {
+        try_growing_to_fit_item_count(size);
+        T *result = data + len;
+        len += size;
+        return result;
+    }
 
     void add_array(T *items, int item_count) {
         for (int i = 0; i < item_count; i += 1) {
@@ -284,20 +284,20 @@ struct Array {
 
     Reverse_Iter reverse() { return {end() - 1, this}; }
 
-	void try_growing() {
-		if (len + 1 > cap) {
-			int new_size = cap * 2;
-			if (new_size < 16) new_size = 16;
+    void try_growing() {
+        if (len + 1 > cap) {
+            int new_size = cap * 2;
+            if (new_size < 16) new_size = 16;
 
-			reserve(new_size);
-		}
-	}
+            reserve(new_size);
+        }
+    }
 
-	void try_growing_to_fit_item_count(int item_count) {
-		if (len + item_count > cap) {
-			int new_size = (cap + item_count) * 2;
-			if (new_size < 16) new_size = 16;
-			reserve(new_size);
-		}
-	}
+    void try_growing_to_fit_item_count(int item_count) {
+        if (len + item_count > cap) {
+            int new_size = (cap + item_count) * 2;
+            if (new_size < 16) new_size = 16;
+            reserve(new_size);
+        }
+    }
 };
