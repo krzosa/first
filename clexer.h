@@ -50,8 +50,7 @@ CL_PRIVATE_FUNCTION void *CL_PushSize(CL_Arena *arena, int size);
     #define AND_CL_STRING_TERMINATE_ON_NEW_LINE &&*T->stream != '\n'
 #endif
 
-typedef enum CL_Kind CL_Kind;
-enum CL_Kind {
+typedef enum CL_Kind {
     CL_EOF,
     CL_MUL,
     CL_DIV,
@@ -170,10 +169,9 @@ enum CL_Kind {
     CL_KEYWORD__STATIC_ASSERT,
     CL_KEYWORD__GENERIC,
     CL_COUNT,
-};
+} CL_Kind;
 
-typedef enum CL_Fix CL_Fix;
-enum CL_Fix {
+typedef enum CL_Fix {
     CL_FIX_NONE,
     CL_SUFFIX_U,
     CL_SUFFIX_UL,
@@ -186,7 +184,7 @@ enum CL_Fix {
     CL_PREFIX_U16,
     CL_PREFIX_U32,
     CL_PREFIX_L,
-};
+} CL_Fix;
 
 typedef uint16_t CL_Flag;
 enum {

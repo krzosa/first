@@ -47,7 +47,6 @@ typedef struct MU_Win32_Window MU_Win32_Window;
 typedef struct MU_Window_Params MU_Window_Params;
 typedef struct MU_Params MU_Params;
 typedef struct MU_Key_State MU_Key_State;
-typedef enum MU_Key MU_Key;
 typedef struct MU_Mouse_State MU_Mouse_State;
 typedef struct MU_DroppedFile MU_DroppedFile;
 typedef struct MU_Arena MU_Arena;
@@ -89,7 +88,7 @@ struct MU_Key_State {
     bool raw_press;
 };
 
-enum MU_Key {
+typedef enum MU_Key {
     MU_KEY_INVALID,
     MU_KEY_ESCAPE,
     MU_KEY_ENTER,
@@ -210,7 +209,7 @@ enum MU_Key {
     MU_KEY_SHIFT,
     MU_KEY_CONTROL,
     MU_KEY_COUNT,
-};
+} MU_Key;
 
 struct MU_Mouse_State {
     MU_Int2 pos;

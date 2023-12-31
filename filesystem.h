@@ -9,15 +9,14 @@
     #endif
 #endif
 
-typedef enum OS_Result OS_Result;
 typedef struct OS_Date OS_Date;
 
-enum OS_Result {
+typedef enum OS_Result {
     OS_SUCCESS,
     OS_ALREADY_EXISTS,
     OS_PATH_NOT_FOUND,
     OS_FAILURE,
-};
+} OS_Result;
 
 enum {
     OS_NO_FLAGS = 0,

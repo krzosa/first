@@ -26,7 +26,6 @@
 typedef struct RE_String RE_String;
 typedef struct RE_Utf32Result RE_Utf32Result;
 typedef struct RE_Parser RE_Parser;
-typedef enum RE_MatchKind RE_MatchKind;
 typedef struct RE_Regex RE_Regex;
 typedef struct RE_Match RE_Match;
 
@@ -34,7 +33,7 @@ typedef struct RE_Match RE_Match;
 Add \W \D \S oppsites
 */
 
-enum RE_MatchKind {
+typedef enum RE_MatchKind {
     RE_MATCH_NULL,
     RE_MATCH_FRONT,
     RE_MATCH_BACK,
@@ -51,7 +50,7 @@ enum RE_MatchKind {
     RE_MATCH_ONE_OR_MORE,
     RE_MATCH_ZERO_OR_MORE,
     RE_MATCH_ZERO_OR_ONE,
-};
+} RE_MatchKind;
 
 struct RE_Regex {
     RE_MatchKind kind;

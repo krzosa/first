@@ -1,7 +1,6 @@
 #ifndef IO_HEADER
 #define IO_HEADER
 #include <stdbool.h>
-typedef enum IO_ErrorResult IO_ErrorResult;
 
 #ifndef IO_API
     #ifdef __cplusplus
@@ -11,11 +10,11 @@ typedef enum IO_ErrorResult IO_ErrorResult;
     #endif
 #endif
 
-enum IO_ErrorResult {
+typedef enum IO_ErrorResult {
     IO_ErrorResult_Continue,
     IO_ErrorResult_Break,
     IO_ErrorResult_Exit,
-};
+} IO_ErrorResult;
 
 #ifdef _WIN32
     #define IO_DebugBreak() (__debugbreak(), 0)
