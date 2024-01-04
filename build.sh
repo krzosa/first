@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
-set -e
-
 mkdir build
 cd build
-clang -o test_array ../test/test_array.cpp -fno-exceptions -fno-rtti -Wno-writable-strings
+set -e
+
+gcc -o test_filesystem ../test/test_filesystem.c -Wno-write-strings
+./test_filesystem
+gcc -o test_array ../test/test_array.cpp -fno-exceptions -fno-rtti -Wno-write-strings
 ./test_array
-clang -o test_table ../test/test_table.cpp -fno-exceptions -fno-rtti -Wno-writable-strings
+gcc -o test_table ../test/test_table.cpp -fno-exceptions -fno-rtti -Wno-write-strings
 ./test_table
+gcc -o compile_as_c ../test/main.c
+./compile_as_c
+
+#-Wno-writable-strings
 cd ..

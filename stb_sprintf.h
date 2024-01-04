@@ -596,7 +596,7 @@ STBSP__PUBLICDEF int STB_SPRINTF_DECORATE(vsprintfcb)(STBSP_SPRINTFCB *callback,
             case 'Q':
                 str = va_arg(va, struct STB_STRING);
                 if (str.str == 0 && str.len != 0) {
-                    str.str = "null";
+                    str.str = (char *)"null";
                     str.len = 4;
                 }
                 pr = (int)str.len;

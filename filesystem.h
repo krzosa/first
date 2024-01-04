@@ -43,7 +43,7 @@ OS_API bool OS_FileExists(S8_String path);
 OS_API bool OS_IsDir(S8_String path);
 OS_API bool OS_IsFile(S8_String path);
 OS_API double OS_GetTime(void);
-OS_API S8_List OS_ListDir(MA_Arena *arena, S8_String path, unsigned flags);
+OS_API S8_List OS_ListDir(MA_Arena *arena, S8_String path, unsigned flags); // @todo: this is poor API, we want absolute, relative, bool dir
 OS_API OS_Result OS_MakeDir(S8_String path);
 OS_API OS_Result OS_CopyFile(S8_String from, S8_String to, bool overwrite);
 OS_API OS_Result OS_DeleteFile(S8_String path);

@@ -8,8 +8,8 @@ int Main() {
     Strs cc = "cl.exe";
     Strs flags = Split("-WX -W3 -wd4200 -diagnostics:column -nologo -Z7 -FC -GF -Gm- -Oi -Zo -D_CRT_SECURE_NO_WARNINGS");
     Strs link = Split("-link -incremental:no");
-    Strs files = Split("../test/main_core_as_header.cpp");
-    files += IfCodeWasModified("../core.c", "../core.obj");
+    Strs files = Split("../test/main_core_as_header.cpp ../core.c");
+    // files += IfCodeWasModified("../core.c", "../core.obj");
     if (use_std) {
         flags += Split("-GR- -EHa-");
     }
@@ -24,5 +24,16 @@ int Main() {
         flags += Split("-Od -D_DEBUG -MTd -fsanitize=address -MTd -RTC1");
         link += Split("-NODEFAULTLIB:LIBCMT");
     }
-    return Run(cc + files + flags + link);
+
+    Strs objs = {};
+    For(files) {
+        if (CodeWasModified(it)) {
+            int error = Run(cc + it + flags + "-c" + link);
+            if (error != 0) return error;
+        }
+
+        objs += S8_Format(Perm, "../build/%Q.obj", FilenameWithoutExt(it));
+    }
+    int error = Run(cc + objs + flags + link);
+    return error;
 }

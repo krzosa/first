@@ -344,16 +344,6 @@ OS_API S8_String OS_ReadFile(MA_Arena *arena, S8_String path) {
     return result;
 }
 
-OS_API int OS_SystemF(const char *string, ...) {
-    MA_Checkpoint scratch = MA_GetScratch();
-    S8_FORMAT(scratch.arena, string, result);
-    IO_Printf("Executing: %s\n", result.str);
-    fflush(stdout);
-    int error_code = system(result.str);
-    MA_ReleaseScratch(scratch);
-    return error_code;
-}
-
 OS_API int64_t OS_GetFileModTime(S8_String file) {
     FILETIME time = {0};
     WIN32_FIND_DATAW data;
@@ -387,50 +377,259 @@ OS_API OS_Date OS_GetDate(void) {
 }
 
 #else
+    #include <unistd.h>
+    #include <limits.h>
+    #include <sys/stat.h>
+    #include <time.h>
+    #include <dirent.h>
+
 OS_API bool OS_EnableTerminalColors(void) { return true; }
-OS_API bool OS_IsAbsolute(S8_String path) { return false; }
+
+OS_API bool OS_IsAbsolute(S8_String path) {
+    bool result = path.len >= 1 && path.str[0] == '/';
+    return result;
+}
+
 OS_API S8_String OS_GetExePath(MA_Arena *arena) {
-    S8_String s = {0};
-    return s;
+    char buffer[PATH_MAX] = {};
+    if (readlink("/proc/self/exe", buffer, PATH_MAX) == -1) {
+        return S8_MakeEmpty();
+    }
+    S8_String result = S8_Copy(arena, S8_MakeFromChar(buffer));
+    return result;
 }
+
 OS_API S8_String OS_GetExeDir(MA_Arena *arena) {
-    S8_String s = {0};
-    return s;
+    S8_String path = OS_GetExePath(arena);
+    S8_String dir = S8_ChopLastSlash(path);
+    S8_String copy = S8_Copy(arena, dir);
+    return copy;
 }
+
 OS_API S8_String OS_GetWorkingDir(MA_Arena *arena) {
-    S8_String s = {0};
-    return s;
+    char *buffer = (char *)MA_PushSizeNonZeroed(arena, PATH_MAX);
+    char *cwd = getcwd(buffer, PATH_MAX);
+    S8_String result = S8_MakeFromChar(cwd);
+    return result;
 }
-OS_API void OS_SetWorkingDir(S8_String path) {}
+
+OS_API void OS_SetWorkingDir(S8_String path) {
+    IO_Assert(path.str[path.len] == 0);
+    chdir(path.str);
+}
+
 OS_API S8_String OS_GetAbsolutePath(MA_Arena *arena, S8_String relative) {
-    S8_String s = {0};
-    return s;
+    IO_Assert(relative.str[relative.len] == 0);
+
+    char *buffer = (char *)MA_PushSizeNonZeroed(arena, PATH_MAX);
+    realpath((char *)relative.str, buffer);
+    S8_String result = S8_MakeFromChar(buffer);
+    return result;
 }
-OS_API bool OS_FileExists(S8_String path) { return false; }
-OS_API bool OS_IsDir(S8_String path) { return false; }
-OS_API bool OS_IsFile(S8_String path) { return false; }
-OS_API double OS_GetTime(void) { return 0.0; }
+
+OS_API bool OS_FileExists(S8_String path) {
+    IO_Assert(path.str[path.len] == 0);
+
+    bool result = false;
+    if (access((char *)path.str, F_OK) == 0) {
+        result = true;
+    }
+    return result;
+}
+
+OS_API bool OS_IsDir(S8_String path) {
+    IO_Assert(path.str[path.len] == 0);
+    struct stat s;
+    if (stat(path.str, &s) != 0)
+        return false;
+    bool result = S_ISDIR(s.st_mode);
+    return result;
+}
+
+OS_API bool OS_IsFile(S8_String path) {
+    IO_Assert(path.str[path.len] == 0);
+    struct stat s;
+    if (stat(path.str, &s) != 0)
+        return false;
+    bool result = S_ISREG(s.st_mode);
+    return result;
+}
+
+OS_API double OS_GetTime(void) {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    uint64_t timeu64 = (((uint64_t)ts.tv_sec) * 1000000ull) + ((uint64_t)ts.tv_nsec) / 1000ull;
+    double timef = (double)timeu64;
+    double result = timef / 1000000.0; // Microseconds to seconds
+    return result;
+}
+
 OS_API S8_List OS_ListDir(MA_Arena *arena, S8_String path, unsigned flags) {
-    S8_List s = {0};
-    return s;
+    IO_Assert((flags & OS_RECURSIVE) == 0);
+    IO_Assert(path.str[path.len] == 0);
+
+    S8_List result = {0};
+    struct dirent *dir = 0;
+    DIR *d = opendir((char *)path.str);
+    if (d) {
+        while ((dir = readdir(d)) != NULL) {
+            if (dir->d_name[0] == '.') {
+                if (dir->d_name[1] == '.') {
+                    if (dir->d_name[2] == 0)
+                        continue;
+                }
+
+                if (dir->d_name[1] == 0)
+                    continue;
+            }
+
+            S8_String n = S8_Format(arena, "%Q/%s", path, dir->d_name);
+            if ((flags & OS_RELATIVE_PATHS) == 0) {
+                n = OS_GetAbsolutePath(arena, n);
+            }
+            if (dir->d_type == DT_DIR) {
+                n = S8_Format(arena, "%Q/", n);
+            }
+
+            S8_AddNode(arena, &result, n);
+        }
+        closedir(d);
+    }
+
+    return result;
 }
-OS_API OS_Result OS_MakeDir(S8_String path) { return OS_FAILURE; }
-OS_API OS_Result OS_CopyFile(S8_String from, S8_String to, bool overwrite) { return OS_FAILURE; }
-OS_API OS_Result OS_DeleteFile(S8_String path) { return OS_FAILURE; }
-OS_API OS_Result OS_DeleteDir(S8_String path, unsigned flags) { return OS_FAILURE; }
-OS_API OS_Result OS_AppendFile(S8_String path, S8_String string) { return OS_FAILURE; }
-OS_API OS_Result OS_WriteFile(S8_String path, S8_String string) { return OS_FAILURE; }
-OS_API S8_String OS_ReadFile(MA_Arena *arena, S8_String path) {
-    S8_String s = {0};
-    return s;
+
+OS_API OS_Result OS_MakeDir(S8_String path) {
+    IO_Assert(path.str[path.len]);
+    int error = mkdir(path.str, 0755);
+    return error == 0 ? OS_SUCCESS : OS_FAILURE;
 }
-OS_API int OS_SystemF(const char *string, ...) { return 0; }
-OS_API int64_t OS_GetFileModTime(S8_String file) { return 0; }
+
+OS_API OS_Result OS_CopyFile(S8_String from, S8_String to, bool overwrite) {
+    const char *ow = overwrite ? "-n" : "";
+    int result = OS_SystemF("cp %s %Q %Q", ow, from, to);
+    return result == 0 ? OS_SUCCESS : OS_FAILURE;
+}
+
+OS_API OS_Result OS_DeleteFile(S8_String path) {
+    int result = OS_SystemF("rm %Q");
+    return result == 0 ? OS_SUCCESS : OS_FAILURE;
+}
+
+OS_API OS_Result OS_DeleteDir(S8_String path, unsigned flags) {
+    IO_Assert(flags & OS_RECURSIVE);
+    int result = OS_SystemF("rm -r %Q");
+    return result == 0 ? OS_SUCCESS : OS_FAILURE;
+}
+
+OS_API int64_t OS_GetFileModTime(S8_String file) {
+    IO_Assert(file.str[file.len] == 0);
+
+    struct stat attrib = {};
+    stat(file.str, &attrib);
+    struct timespec ts = attrib.st_mtim;
+    int64_t result = (((int64_t)ts.tv_sec) * 1000000ll) + ((int64_t)ts.tv_nsec) / 1000ll;
+    return result;
+}
+
 OS_API OS_Date OS_GetDate(void) {
     OS_Date s = {0};
     return s;
 }
+
+OS_API OS_Result OS_AppendFile(S8_String path, S8_String string) {
+    IO_Assert(path.str[path.len] == 0);
+
+    OS_Result result = OS_FAILURE;
+    FILE *f = fopen((const char *)path.str, "a");
+    if (f) {
+        result = OS_SUCCESS;
+
+        size_t written = fwrite(string.str, 1, string.len, f);
+        if (written < string.len) {
+            result = OS_FAILURE;
+        }
+
+        int error = fclose(f);
+        if (error != 0) {
+            result = OS_FAILURE;
+        }
+    }
+    return result;
+}
+
+OS_API S8_String OS_ReadFile(MA_Arena *arena, S8_String path) {
+    IO_Assert(path.str[path.len] == 0);
+
+    S8_String result = {};
+    FILE *f = fopen(path.str, "rb");
+    if (f) {
+        fseek(f, 0, SEEK_END);
+        result.len = ftell(f);
+        fseek(f, 0, SEEK_SET);
+
+        result.str = (char *)MA_PushSizeNonZeroed(arena, result.len + 1);
+        fread(result.str, result.len, 1, f);
+        result.str[result.len] = 0;
+
+        fclose(f);
+    }
+    return result;
+}
+
+    #if 0
+        #include <fcntl.h>
+        #include <unistd.h>
+OS_API OS_Result OS_WriteFile(S8_String path, S8_String string) {
+    IO_Assert(path.str[path.len] == 0);
+
+    OS_Result result = OS_FAILURE;
+    int fd = open(path.str, O_CREAT | O_WRONLY, 0644);
+    if (fd != -1) {
+        result = OS_SUCCESS;
+
+        ssize_t written = write(fd, string.str, string.len);
+        if (written != string.len) result = OS_FAILURE;
+
+        int err = close(fd);
+        if (err != 0) result = OS_FAILURE;
+    }
+    return OS_SUCCESS;
+}
+    #else
+OS_API OS_Result OS_WriteFile(S8_String path, S8_String string) {
+    IO_Assert(path.str[path.len] == 0);
+
+    OS_Result result = OS_FAILURE;
+    FILE *f = fopen((const char *)path.str, "w");
+    if (f) {
+        result = OS_SUCCESS;
+
+        size_t written = fwrite(string.str, 1, string.len, f);
+        if (written < string.len) {
+            result = OS_FAILURE;
+        }
+
+        int error = fclose(f);
+        if (error != 0) {
+            result = OS_FAILURE;
+        }
+    }
+    return result;
+}
+    #endif
+
 #endif
+
+OS_API int OS_SystemF(const char *string, ...) {
+    MA_Checkpoint scratch = MA_GetScratch();
+    S8_FORMAT(scratch.arena, string, result);
+    IO_Printf("Executing: %s\n", result.str);
+    fflush(stdout);
+    int error_code = system(result.str);
+    MA_ReleaseScratch(scratch);
+    return error_code;
+}
 
 OS_API S8_String UTF_CreateStringFromWidechar(MA_Arena *arena, wchar_t *wstr, int64_t wsize) {
     int64_t buffer_size = (wsize + 1) * 2;

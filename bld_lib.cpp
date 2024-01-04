@@ -205,6 +205,7 @@ Strs operator+(Str a, Str b) {
     return c;
 }
 
+//@todo: split on any whitespace instead!
 Strs Split(char *str) {
     Str s = S8_MakeFromChar(str);
     S8_List list = S8_Split(Perm, s, S8_Lit(" "), 0);
@@ -240,6 +241,8 @@ Str Merge(Strs list, Str separator = " "_s) {
 }
 
 bool CodeWasModified(char *str) { return SRC_WasModified(S8_MakeFromChar(str)); }
+bool CodeWasModified(S8_String str) { return SRC_WasModified(str); }
+S8_String FilenameWithoutExt(S8_String it) { return S8_SkipToLastSlash(S8_ChopLastPeriod(it)); }
 Strs IfCodeWasModified(char *cfile, char *objfile) {
     Strs result = {};
     S8_String s = S8_MakeFromChar(cfile);
@@ -258,7 +261,7 @@ int Run(Strs s) {
 #ifndef BLD_MAIN
 int main() {
     int Main();
-    SRC_InitCache(Perm, S8_Lit("project.cache"));
+    SRC_InitCache(Perm, S8_Lit("buildfile.cache"));
     int result = Main();
     if (result == 0) SRC_SaveCache();
 }
