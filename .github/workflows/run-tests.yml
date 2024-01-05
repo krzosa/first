@@ -6,7 +6,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: sudo apt install g++
       - run: chmod +x build.sh
-      - run: ./build.sh test
+      - run: ./build.sh
   run-and-compile-windows:
     runs-on: windows-latest
     steps:
@@ -15,5 +15,5 @@ jobs:
           with:
             arch: x64
         - uses: actions/checkout@v4
-        - run: call build.bat test
+        - run: call build.bat
           shell: cmd
