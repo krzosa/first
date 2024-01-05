@@ -62,11 +62,7 @@ int main(int argument_count, char **arguments) {
     // Run the build file
     double time = OS_GetTime();
     if (build_file.str) {
-#if OS_WINDOWS
-        int result = OS_SystemF("%Q", exe_name);
-#else
-        int result = OS_SystemF("./%Q", exe_name);
-#endif
+        int result = OS_SystemF("%s%Q", IF_WINDOWS_ELSE("", "./"), exe_name);
         if (result != 0) {
             printf("FAILED execution of the build file!\n");
             return result;
