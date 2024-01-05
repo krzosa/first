@@ -288,6 +288,45 @@ Strs ListDir(char *dir) {
     return result;
 }
 
+void PrintCompilerFlagHelp(Strs cc) {
+    if (cc == "cl") {
+        IO_Printf("------- CL.EXE -------\n");
+        IO_Printf("/FC   = Print full paths in diagnostics\n");
+        IO_Printf("/Gm-  = Old feature, 'minimal compilation', in case it's not off by default\n");
+        IO_Printf("/GF   = Pools strings as read-only. If you try to modify strings under /GF, an application error occurs.\n");
+        IO_Printf("/Oi   = Replaces some function calls with intrinsic \n");
+        IO_Printf("/MP   = Multithreaded compilation\n");
+
+        IO_Printf("/GR-  = Disable runtime type information\n");
+        IO_Printf("/EHa- = Disable exceptions\n");
+        IO_Printf("/EHsc = Enable exceptions\n");
+
+        IO_Printf("/MT = Link static libc. The 'd' means debug version \n");
+        IO_Printf("/MD = Link dynamic libc. The 'd' means debug version\n");
+        IO_Printf("/GL = Whole program optimization \n");
+        IO_Printf("/RTC1 = runtime error checks \n");
+        IO_Printf("/opt:ref = eliminates functions and data that are never referenced\n");
+        IO_Printf("/opt:icf = eliminates redundant 'COMDAT's\n");
+
+        IO_Printf("----------------------\n");
+        IO_Printf("FLAGS   = /MP /Zi /FC /WX /W3 /wd4200 /diagnostics:column /nologo -D_CRT_SECURE_NO_WARNINGS /GF /Gm- /Oi\n");
+        IO_Printf("LINK    = /link /incremental:no\n");
+        IO_Printf("STD_OFF = /GR- /EHa-\n");
+        IO_Printf("STD_ON  = /EHsc\n");
+        IO_Printf("DEBUG   = -Od -D_DEBUG -MDd -fsanitize=address -RTC1\n");
+        // IO_Printf("LINK  = -NODEFAULTLIB:LIBCMT\n");
+        IO_Printf("RELEASE = -O2 -MT -DNDEBUG -GL\n");
+        IO_Printf("LINK    = -opt:ref -opt:icf\n");
+    }
+    else if (cc == "gcc") {
+    }
+    else if (cc == "clang") {
+    }
+    else {
+        IO_FatalError("Unhandled compiler");
+    }
+}
+
 #ifndef BLD_MAIN
 int Main();
 int main() {
