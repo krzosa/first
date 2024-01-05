@@ -7,6 +7,13 @@ jobs:
       - run: sudo apt install g++
       - run: chmod +x build.sh
       - run: ./build.sh
+  run-and-compile-mac:
+    runs-on: mac-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt install g++
+      - run: chmod +x build.sh
+      - run: ./build.sh
   run-and-compile-windows:
     runs-on: windows-latest
     steps:
