@@ -414,44 +414,59 @@ OS_API S8_String OS_GetWorkingDir(MA_Arena *arena) {
 }
 
 OS_API void OS_SetWorkingDir(S8_String path) {
-    IO_Assert(path.str[path.len] == 0);
-    chdir(path.str);
+    MA_Checkpoint scratch = MA_GetScratch();
+    S8_String copy = S8_Copy(scratch.arena, path);
+    chdir(copy.str);
+    MA_ReleaseScratch(scratch);
 }
 
 OS_API S8_String OS_GetAbsolutePath(MA_Arena *arena, S8_String relative) {
-    IO_Assert(relative.str[relative.len] == 0);
+    MA_Checkpoint scratch = MA_GetScratch1(arena);
+    S8_String copy = S8_Copy(scratch.arena, relative);
 
     char *buffer = (char *)MA_PushSizeNonZeroed(arena, PATH_MAX);
-    realpath((char *)relative.str, buffer);
+    realpath((char *)copy.str, buffer);
     S8_String result = S8_MakeFromChar(buffer);
+
+    MA_ReleaseScratch(scratch);
     return result;
 }
 
 OS_API bool OS_FileExists(S8_String path) {
-    IO_Assert(path.str[path.len] == 0);
+    MA_Checkpoint scratch = MA_GetScratch();
+    S8_String copy = S8_Copy(scratch.arena, path);
 
     bool result = false;
-    if (access((char *)path.str, F_OK) == 0) {
+    if (access((char *)copy.str, F_OK) == 0) {
         result = true;
     }
+
+    MA_ReleaseScratch(scratch);
     return result;
 }
 
 OS_API bool OS_IsDir(S8_String path) {
-    IO_Assert(path.str[path.len] == 0);
+    MA_Checkpoint scratch = MA_GetScratch();
+    S8_String copy = S8_Copy(scratch.arena, path);
+
     struct stat s;
-    if (stat(path.str, &s) != 0)
+    if (stat(copy.str, &s) != 0)
         return false;
+
     bool result = S_ISDIR(s.st_mode);
+    MA_ReleaseScratch(scratch);
     return result;
 }
 
 OS_API bool OS_IsFile(S8_String path) {
-    IO_Assert(path.str[path.len] == 0);
+    MA_Checkpoint scratch = MA_GetScratch();
+    S8_String copy = S8_Copy(scratch.arena, path);
+
     struct stat s;
-    if (stat(path.str, &s) != 0)
+    if (stat(copy.str, &s) != 0)
         return false;
     bool result = S_ISREG(s.st_mode);
+    MA_ReleaseScratch(scratch);
     return result;
 }
 
@@ -466,7 +481,8 @@ OS_API double OS_GetTime(void) {
 
 OS_API S8_List OS_ListDir(MA_Arena *arena, S8_String path, unsigned flags) {
     IO_Assert((flags & OS_RECURSIVE) == 0);
-    IO_Assert(path.str[path.len] == 0);
+    MA_Checkpoint scratch = MA_GetScratch1(arena);
+    path = S8_Copy(scratch.arena, path);
 
     S8_List result = {0};
     struct dirent *dir = 0;
@@ -483,25 +499,28 @@ OS_API S8_List OS_ListDir(MA_Arena *arena, S8_String path, unsigned flags) {
                     continue;
             }
 
-            S8_String n = S8_Format(arena, "%Q/%s", path, dir->d_name);
+            S8_String n = S8_Format(scratch.arena, "%Q/%s", path, dir->d_name);
             if ((flags & OS_RELATIVE_PATHS) == 0) {
-                n = OS_GetAbsolutePath(arena, n);
+                n = OS_GetAbsolutePath(scratch.arena, n);
             }
             if (dir->d_type == DT_DIR) {
-                n = S8_Format(arena, "%Q/", n);
+                n = S8_Format(scratch.arena, "%Q/", n);
             }
 
-            S8_AddNode(arena, &result, n);
+            S8_AddNode(arena, &result, S8_Copy(arena, n));
         }
         closedir(d);
     }
 
+    MA_ReleaseScratch(scratch);
     return result;
 }
 
 OS_API OS_Result OS_MakeDir(S8_String path) {
-    IO_Assert(path.str[path.len]);
+    MA_Checkpoint scratch = MA_GetScratch();
+    path = S8_Copy(scratch.arena, path);
     int error = mkdir(path.str, 0755);
+    MA_ReleaseScratch(scratch);
     return error == 0 ? OS_SUCCESS : OS_FAILURE;
 }
 
@@ -523,12 +542,15 @@ OS_API OS_Result OS_DeleteDir(S8_String path, unsigned flags) {
 }
 
 OS_API int64_t OS_GetFileModTime(S8_String file) {
-    IO_Assert(file.str[file.len] == 0);
+    MA_Checkpoint scratch = MA_GetScratch();
+    file = S8_Copy(scratch.arena, file);
 
     struct stat attrib = {};
     stat(file.str, &attrib);
     struct timespec ts = attrib.st_mtim;
     int64_t result = (((int64_t)ts.tv_sec) * 1000000ll) + ((int64_t)ts.tv_nsec) / 1000ll;
+
+    MA_ReleaseScratch(scratch);
     return result;
 }
 
@@ -538,7 +560,8 @@ OS_API OS_Date OS_GetDate(void) {
 }
 
 OS_API OS_Result OS_AppendFile(S8_String path, S8_String string) {
-    IO_Assert(path.str[path.len] == 0);
+    MA_Checkpoint scratch = MA_GetScratch();
+    path = S8_Copy(scratch.arena, path);
 
     OS_Result result = OS_FAILURE;
     FILE *f = fopen((const char *)path.str, "a");
@@ -555,11 +578,14 @@ OS_API OS_Result OS_AppendFile(S8_String path, S8_String string) {
             result = OS_FAILURE;
         }
     }
+
+    MA_ReleaseScratch(scratch);
     return result;
 }
 
 OS_API S8_String OS_ReadFile(MA_Arena *arena, S8_String path) {
-    IO_Assert(path.str[path.len] == 0);
+    MA_Checkpoint scratch = MA_GetScratch1(arena);
+    path = S8_Copy(scratch.arena, path);
 
     S8_String result = {};
     FILE *f = fopen(path.str, "rb");
@@ -574,6 +600,8 @@ OS_API S8_String OS_ReadFile(MA_Arena *arena, S8_String path) {
 
         fclose(f);
     }
+
+    MA_ReleaseScratch(scratch);
     return result;
 }
 
@@ -598,7 +626,8 @@ OS_API OS_Result OS_WriteFile(S8_String path, S8_String string) {
 }
     #else
 OS_API OS_Result OS_WriteFile(S8_String path, S8_String string) {
-    IO_Assert(path.str[path.len] == 0);
+    MA_Checkpoint scratch = MA_GetScratch();
+    path = S8_Copy(scratch.arena, path);
 
     OS_Result result = OS_FAILURE;
     FILE *f = fopen((const char *)path.str, "w");
@@ -615,6 +644,8 @@ OS_API OS_Result OS_WriteFile(S8_String path, S8_String string) {
             result = OS_FAILURE;
         }
     }
+
+    MA_ReleaseScratch(scratch);
     return result;
 }
     #endif

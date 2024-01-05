@@ -259,8 +259,8 @@ int Run(Strs s) {
 }
 
 #ifndef BLD_MAIN
+int Main();
 int main() {
-    int Main();
     SRC_InitCache(Perm, S8_Lit("buildfile.cache"));
     int result = Main();
     if (result == 0) SRC_SaveCache();

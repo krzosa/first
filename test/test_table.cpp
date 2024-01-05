@@ -37,7 +37,9 @@ void TestStrings() {
 }
 
 int main() {
+    IO_Printf("test_table.cpp - ");
     TestSimpleInsertAndIntegrity();
     TestStrings();
+    IO_Printf("DONE\n");
     return 0;
 }

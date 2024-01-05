@@ -71,9 +71,11 @@ void TestBootstrapExclusive() {
 }
 
 int main() {
+    IO_Printf("test_arena.cpp - ");
     TestScratch();
     TestBuffer();
     TestCreateAllocate();
     TestBootstrap();
     TestBootstrapExclusive();
+    IO_Printf("DONE\n");
 }
