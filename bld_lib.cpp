@@ -175,6 +175,12 @@ bool operator==(Strs a, char *b) {
     return result;
 }
 
+bool operator==(Strs a, const char *b) {
+    if (a.len != 1) return false;
+    bool result = a[0] == S8_MakeFromChar((char *)b);
+    return result;
+}
+
 Strs operator+(Strs a, Strs b) {
     Strs c = {a.copy(*Perm)};
     c.add_array(b);
@@ -323,7 +329,7 @@ void PrintCompilerFlagHelp(Strs cc) {
     else if (cc == "clang") {
     }
     else {
-        IO_FatalError("Unhandled compiler");
+        IO_FatalErrorf("Unhandled compiler");
     }
 }
 
