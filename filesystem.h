@@ -1,4 +1,5 @@
 #pragma once
+// Quick and dirty filesystem operations
 
 #ifndef OS_API
     #ifdef __cplusplus

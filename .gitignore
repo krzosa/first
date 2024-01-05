@@ -11,7 +11,7 @@
 *.sublime-project
 *.sublime-workspace
 backup.*
-
+bld
 imgui.ini
 
 __pycache__/

@@ -290,21 +290,20 @@ static OS_Result OS__WriteFile(S8_String path, S8_String data, bool append) {
         IO_Assert(data.len == (DWORD)data.len); // @Todo: can only read 32 byte size files?
         BOOL error = WriteFile(handle, data.str, (DWORD)data.len, &bytes_written, NULL);
         if (error == TRUE) {
-            if (bytes_written != data.len) {
+            if (bytes_written == data.len) {
                 result = OS_SUCCESS;
             }
         }
         CloseHandle(handle);
     }
-    else
-        result = OS_PATH_NOT_FOUND;
+    else result = OS_PATH_NOT_FOUND;
 
     return result;
 }
 
 OS_API OS_Result OS_AppendFile(S8_String path, S8_String string) {
     return OS__WriteFile(path, string, true);
-} // @untested
+}
 
 OS_API OS_Result OS_WriteFile(S8_String path, S8_String string) {
     return OS__WriteFile(path, string, false);

@@ -1,4 +1,4 @@
-#include "bld_lib.cpp"
+#include "build_lib.cpp"
 
 Strs cc = ON_WINDOWS("cl") ON_MAC("clang") ON_LINUX("gcc");
 
@@ -15,6 +15,7 @@ int CompileFiles(Strs files) {
     else {
         result = OS_SystemF("cl -Fe:%Q.exe %Q -Zi -WX -W3 -wd4200 -diagnostics:column -nologo -D_CRT_SECURE_NO_WARNINGS", exe, filestr);
     }
+    if (result == 0) result = OS_SystemF(IF_WINDOWS_ELSE("", "./") "%Q.exe", exe);
     return result;
 }
 

@@ -1,5 +1,5 @@
-#define BLD_MAIN
-#include "bld_lib.cpp"
+#define BUILD_MAIN
+#include "build_lib.cpp"
 
 int main(int argument_count, char **arguments) {
     OS_MakeDir(S8_Lit("build"));
@@ -10,17 +10,17 @@ int main(int argument_count, char **arguments) {
 
     for (int i = 1; i < argument_count; i += 1) {
         S8_String arg = S8_MakeFromChar(arguments[i]);
-        if (arg == "clear_cache"_s) OS_DeleteFile("bld_tool.cache"_s);
+        if (arg == "clear_cache"_s) OS_DeleteFile("build_tool.cache"_s);
     }
 
-    SRC_InitCache(Perm, S8_Lit("bld.cache"));
+    SRC_InitCache(Perm, S8_Lit("build_tool.cache"));
 
     // Search for build file in the project directory
     S8_String build_file = {0};
     {
         S8_List files_current_dir = OS_ListDir(Perm, S8_Lit(".."), 0);
         for (S8_Node *it = files_current_dir.first; it; it = it->next) {
-            if (S8_Find(it->string, S8_Lit("bld_file.c"), S8_IGNORE_CASE, 0)) {
+            if (S8_Find(it->string, S8_Lit("build_file.c"), S8_IGNORE_CASE, 0)) {
                 build_file = it->string;
             }
         }
