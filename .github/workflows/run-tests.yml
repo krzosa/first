@@ -4,16 +4,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt install clang
-      - run: chmod +x build.sh
-      - run: ./build.sh
+      - run: sudo apt install g++
+      - run: g++ build_main.cpp -o bld && ./bld
   run-and-compile-mac:
     runs-on: mac-latest
     steps:
       - uses: actions/checkout@v4
       - run: brew install llvm
-      - run: chmod +x build.sh
-      - run: ./build.sh
+      - run: clang++ build_main.cpp -o bld && ./bld
   run-and-compile-windows:
     runs-on: windows-latest
     steps:
