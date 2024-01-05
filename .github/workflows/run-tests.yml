@@ -4,7 +4,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt install clang
+      - run: sudo apt install g++
       - run: chmod +x build.sh
       - run: ./build.sh test
   run-and-compile-windows:
