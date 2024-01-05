@@ -80,6 +80,26 @@
     #define FORCE_INLINE inline
 #endif
 
+#if OS_MAC
+    #define ON_MAC(x) x
+#else
+    #define ON_MAC(x)
+#endif
+
+#if OS_WINDOWS
+    #define ON_WINDOWS(x) x
+    #define IF_WINDOWS_ELSE(x, y) x
+#else
+    #define ON_WINDOWS(x)
+    #define IF_WINDOWS_ELSE(x, y) y
+#endif
+
+#if OS_LINUX
+    #define ON_LINUX(x) x
+#else
+    #define ON_LINUX(x)
+#endif
+
 // #if COMPILER_CLANG
 //     #pragma clang diagnostic push
 //     #pragma clang diagnostic ignored "-Wmicrosoft-enum-forward-reference"

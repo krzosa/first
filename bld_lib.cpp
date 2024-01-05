@@ -121,7 +121,7 @@ bool SRC_WasModified(S8_String file) {
 
     S8_String without_ext = S8_ChopLastPeriod(file);
     S8_String name_only = S8_SkipToLastSlash(without_ext);
-    S8_String obj = S8_Format(Perm, "%.*s.obj", S8_Expand(name_only));
+    S8_String obj = S8_Format(Perm, "%.*s.%s", S8_Expand(name_only), IF_WINDOWS_ELSE("obj", "o"));
     bool modified = OS_FileExists(obj) == false;
 
     SRC_CacheEntry *in_memory = SRC_HashFile(file, 0);
@@ -150,8 +150,18 @@ struct Strs : Array<Str> {
         *this = {};
         this->add(S8_MakeFromChar(str));
     }
+    Strs(Str a) {
+        *this = {};
+        this->add(a);
+    }
     Strs(Array<Str> a) { MA_MemoryCopy(this, &a, sizeof(a)); }
 };
+
+bool operator==(Strs a, char *b) {
+    if (a.len != 1) return false;
+    bool result = a[0] == S8_MakeFromChar(b);
+    return result;
+}
 
 Strs operator+(Strs a, Strs b) {
     Strs c = {a.copy(*Perm)};
@@ -256,6 +266,13 @@ void ChangeDir(char *str) { OS_SetWorkingDir(S8_MakeFromChar(str)); }
 int Run(Strs s) {
     Str cmd = Merge(s);
     return OS_SystemF("%Q", cmd);
+}
+
+Strs ListDir(char *dir) {
+    Strs result = {};
+    S8_List files = OS_ListDir(Perm, S8_MakeFromChar(dir), 0);
+    S8_For(it, files) result.add(it->string);
+    return result;
 }
 
 #ifndef BLD_MAIN

@@ -2,7 +2,7 @@
 mkdir build
 cd build
 set -e
-gcc -o bld ../bld_main.cpp -fno-exceptions -fno-rtti -Wno-write-strings
+gcc -o bld ../bld_main.cpp -g -fno-exceptions -fno-rtti -Wno-write-strings
 cd ..
 ./build/bld
 # gcc -o test_filesystem ../test/test_filesystem.c -Wno-write-strings

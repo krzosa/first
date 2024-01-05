@@ -6,13 +6,7 @@ int main(int argument_count, char **arguments) {
     OS_SetWorkingDir(S8_Lit("build"));
     IO_Printf("WORKING DIR: %Q\n", OS_GetWorkingDir(Perm));
 
-#if OS_LINUX
-    S8_String cc = "gcc"_s;
-#elif OS_WINDOWS
-    S8_String cc = "cl"_s;
-#else
-    S8_String cc = "clang"_s;
-#endif
+    S8_String cc = ON_WINDOWS("cl"_s) ON_MAC("clang"_s) ON_LINUX("gcc"_s);
 
     for (int i = 1; i < argument_count; i += 1) {
         S8_String arg = S8_MakeFromChar(arguments[i]);
@@ -54,7 +48,8 @@ int main(int argument_count, char **arguments) {
         }
         else {
             IO_Assert(cc == "gcc"_s);
-            result = OS_SystemF("gcc -Wno-write-strings %Q -o %Q -g", build_file, exe_name);
+            if (result == 0) result = OS_SystemF("gcc -c -Wno-write-strings %Q -o %Q.o -g", build_file, b);
+            if (result == 0) result = OS_SystemF("gcc -Wno-write-strings %Q.o -o %Q -g", b, exe_name);
         }
 
         if (result != 0) {
