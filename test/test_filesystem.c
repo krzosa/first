@@ -2,7 +2,7 @@
 
 int main() {
     IO_Printf("test_filesystem.c - ");
-    MA_Arena arena = {};
+    MA_Arena arena = {0};
     S8_String read_file_path = S8_Lit("../test/data/read_file");
 
     // Read file test

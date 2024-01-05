@@ -10,7 +10,7 @@ int main(int argument_count, char **arguments) {
 
     for (int i = 1; i < argument_count; i += 1) {
         S8_String arg = S8_MakeFromChar(arguments[i]);
-        if (arg == "clear_cache"_s) OS_DeleteFile("bld.cache"_s);
+        if (arg == "clear_cache"_s) OS_DeleteFile("bld_tool.cache"_s);
     }
 
     SRC_InitCache(Perm, S8_Lit("bld.cache"));
@@ -37,7 +37,7 @@ int main(int argument_count, char **arguments) {
 
     // @todo: add search path?
     // Compile the build file only if code changed
-    if (SRC_WasModified(build_file)) {
+    if (SRC_WasModified(build_file, exe_name)) {
         double time = OS_GetTime();
         int result = 0;
         if (cc == "cl"_s) {
@@ -48,8 +48,7 @@ int main(int argument_count, char **arguments) {
         }
         else {
             IO_Assert(cc == "gcc"_s);
-            if (result == 0) result = OS_SystemF("gcc -c -Wno-write-strings %Q -o %Q.o -g", build_file, b);
-            if (result == 0) result = OS_SystemF("gcc -Wno-write-strings %Q.o -o %Q -g", b, exe_name);
+            result = OS_SystemF("gcc -Wno-write-strings %Q -o %Q -g", build_file, exe_name);
         }
 
         if (result != 0) {
@@ -64,9 +63,9 @@ int main(int argument_count, char **arguments) {
     double time = OS_GetTime();
     if (build_file.str) {
 #if OS_WINDOWS
-        int result = OS_SystemF("%.*s", S8_Expand(exe_name));
+        int result = OS_SystemF("%Q", exe_name);
 #else
-        int result = OS_SystemF("./%.*s", S8_Expand(exe_name));
+        int result = OS_SystemF("./%Q", exe_name);
 #endif
         if (result != 0) {
             printf("FAILED execution of the build file!\n");

@@ -107,7 +107,7 @@ CL_PRIVATE_FUNCTION void *CL__PushSizeZeroed(CL_Arena *arena, int size) {
     return result;
 }
 
-char *CL_FixString[] = {
+const char *CL_FixString[] = {
     "",
     "SUFFIX_U",
     "SUFFIX_UL",
@@ -122,7 +122,7 @@ char *CL_FixString[] = {
     "PREFIX_L",
 };
 
-char *CL_KindString[] = {
+const char *CL_KindString[] = {
     "EOF",
     "*",
     "/",
@@ -242,7 +242,7 @@ char *CL_KindString[] = {
     "KEYWORD__GENERIC",
 };
 
-char *CL_MessageKindString[] = {
+const char *CL_MessageKindString[] = {
     "ERROR",
     "WARNING",
     "TRACE",
@@ -317,12 +317,12 @@ CL_PRIVATE_FUNCTION CL_Token *CL_CopyToken(CL_Arena *arena, CL_Token *token) {
 }
 
 CL_API_FUNCTION void CL_StringifyMessage(char *buff, int buff_size, CL_Message *msg) {
-    char *kind = CL_MessageKindString[msg->kind];
+    const char *kind = CL_MessageKindString[msg->kind];
     CL_SNPRINTF(buff, buff_size, "%s:%d %15s %15s", msg->token.file, msg->token.line, kind, msg->string);
 }
 
 CL_API_FUNCTION void CL_Stringify(char *buff, int buff_size, CL_Token *token) {
-    char *token_kind = "UNKNOWN";
+    const char *token_kind = "UNKNOWN";
     if (token->kind < CL_COUNT) token_kind = CL_KindString[token->kind];
     CL_SNPRINTF(buff, buff_size, "%s:%d %15s %15.*s", token->file, token->line, token_kind, token->len, token->str);
 }
@@ -1499,7 +1499,7 @@ CL_API_FUNCTION void CL_DefaultTokenize(CL_LexResult *T, CL_Token *token) {
         default: {
             CL_Message *result = CL_PushStruct(T->arena->other, CL_Message);
             result->kind = CLM_WARNING;
-            result->string = "Unhandled character, skipping ...";
+            result->string = (char *)"Unhandled character, skipping ...";
             CL_SLL_QUEUE_ADD(T->first_message, T->last_message, result);
             result->token = *token;
             token->kind = CL_COMMENT;
@@ -1749,7 +1749,7 @@ CL_PRIVATE_FUNCTION char *CL_ChopLastSlash(CL_Arena *arena, char *str) {
         result = CL_PushStringCopy(arena, str, slash_pos);
     }
     else {
-        result = "./";
+        result = (char *)"./";
     }
     return result;
 }

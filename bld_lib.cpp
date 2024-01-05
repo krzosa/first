@@ -108,7 +108,7 @@ SRC_CacheEntry *SRC_HashFile(S8_String file, char *parent_file) {
     return result;
 }
 
-bool SRC_WasModified(S8_String file) {
+bool SRC_WasModified(S8_String file, S8_String artifact_path) {
     double time_start = OS_GetTime();
 
     if (OS_FileExists(file) == false) {
@@ -121,8 +121,9 @@ bool SRC_WasModified(S8_String file) {
 
     S8_String without_ext = S8_ChopLastPeriod(file);
     S8_String name_only = S8_SkipToLastSlash(without_ext);
-    S8_String obj = S8_Format(Perm, "%.*s.%s", S8_Expand(name_only), IF_WINDOWS_ELSE("obj", "o"));
-    bool modified = OS_FileExists(obj) == false;
+
+    if (artifact_path.len == 0) artifact_path = S8_Format(Perm, "%.*s.%s", S8_Expand(name_only), IF_WINDOWS_ELSE("obj", "o"));
+    bool modified = OS_FileExists(artifact_path) == false;
 
     SRC_CacheEntry *in_memory = SRC_HashFile(file, 0);
     IO_Assert(in_memory);
@@ -149,6 +150,17 @@ struct Strs : Array<Str> {
     Strs(char *str) {
         *this = {};
         this->add(S8_MakeFromChar(str));
+    }
+    Strs(char *a, char *b) {
+        *this = {};
+        this->add(S8_MakeFromChar(a));
+        this->add(S8_MakeFromChar(b));
+    }
+    Strs(char *a, char *b, char *c) {
+        *this = {};
+        this->add(S8_MakeFromChar(a));
+        this->add(S8_MakeFromChar(b));
+        this->add(S8_MakeFromChar(c));
     }
     Strs(Str a) {
         *this = {};
@@ -250,13 +262,14 @@ Str Merge(Strs list, Str separator = " "_s) {
     return string;
 }
 
-bool CodeWasModified(char *str) { return SRC_WasModified(S8_MakeFromChar(str)); }
-bool CodeWasModified(S8_String str) { return SRC_WasModified(str); }
 S8_String FilenameWithoutExt(S8_String it) { return S8_SkipToLastSlash(S8_ChopLastPeriod(it)); }
+bool CodeWasModified(char *str, char *artifact = 0) { return SRC_WasModified(S8_MakeFromChar(str), S8_MakeFromChar(artifact)); }
+bool CodeWasModified(S8_String str, S8_String artifact = {}) { return SRC_WasModified(str, artifact); }
 Strs IfCodeWasModified(char *cfile, char *objfile) {
     Strs result = {};
     S8_String s = S8_MakeFromChar(cfile);
-    if (SRC_WasModified(s)) {
+    S8_String o = S8_MakeFromChar(objfile);
+    if (SRC_WasModified(s, o)) {
         return cfile;
     }
     return objfile;
@@ -278,7 +291,7 @@ Strs ListDir(char *dir) {
 #ifndef BLD_MAIN
 int Main();
 int main() {
-    SRC_InitCache(Perm, S8_Lit("buildfile.cache"));
+    SRC_InitCache(Perm, S8_Lit("bld_file.cache"));
     int result = Main();
     if (result == 0) SRC_SaveCache();
 }

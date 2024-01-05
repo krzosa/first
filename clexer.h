@@ -410,7 +410,7 @@ CL_INLINE int CL_StringLength(char *string) {
     return len;
 }
 
-CL_INLINE bool CL_StringsAreEqual(char *a, int64_t alen, char *b, int64_t blen) {
+CL_INLINE bool CL_StringsAreEqual(char *a, int64_t alen, const char *b, int64_t blen) {
     if (alen != blen) return false;
     for (int i = 0; i < alen; i += 1) {
         if (a[i] != b[i]) return false;
