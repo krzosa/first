@@ -117,13 +117,10 @@ void TestCopy() {
 }
 
 int main() {
-    IO_Printf("test_array.cpp - ");
     TestExclusiveArenaBackedArray();
     TestRemoveForLoop();
     TestBasic();
     TestReverseLoop();
     TestCopy();
-    IO_Printf("DONE\n");
-
     return 0;
 }

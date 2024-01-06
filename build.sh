@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-clang -o bld build_main.cpp -g
+gcc -o bld code/build_main.cpp -g
 ./bld

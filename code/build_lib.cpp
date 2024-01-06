@@ -29,7 +29,7 @@ RELEASE_LINK = -opt:ref -opt:icf
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#include "core.c"
+#include "../core.c"
 
 #define CL_Arena MA_Arena
 #define CL_PushSize MA_PushSizeNonZeroed
