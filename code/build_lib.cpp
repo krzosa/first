@@ -61,6 +61,7 @@ S8_String SRC_CacheFilename;
 MA_Arena PernamentArena;
 MA_Arena *Perm = &PernamentArena;
 CL_SearchPaths SRC_SearchPaths = {}; // @todo;
+Table<S8_String> CMDLine;
 
 void SRC_InitCache(MA_Arena *arena, S8_String cachefilename) {
     SRC_CacheFilename = cachefilename;
@@ -260,6 +261,10 @@ Strs operator+(Str a, Str b) {
     return c;
 }
 
+Strs operator+(Str a, char *b) {
+    return a + S8_MakeFromChar(b);
+}
+
 //@todo: split on any whitespace instead!
 Strs Split(char *str) {
     Str s = S8_MakeFromChar(str);
@@ -321,9 +326,34 @@ Strs ListDir(char *dir) {
     return result;
 }
 
+void ReportError(S8_String it) {
+    IO_FatalErrorf("Invalid command line argument syntax! Expected a key value pair!\n"
+                   "Here is the wrong argument: %Q\n"
+                   "Here is a good example: bld.exe profile=release platform=windows\n",
+                   it);
+}
+
 #ifndef BUILD_MAIN
 int Main();
-int main() {
+int main(int argc, char **argv) {
+
+    if (argc > 1) IO_Printf("Command line arguments:\n");
+    for (int i = 1; i < argc; i += 1) {
+        S8_String it = S8_MakeFromChar(argv[i]);
+
+        int64_t idx = 0;
+        if (S8_Find(it, "="_s, 0, &idx)) {
+            S8_String key = S8_GetPrefix(it, idx);
+            S8_String value = S8_Skip(it, idx + 1);
+            if (key.len == 0) ReportError(it);
+            if (value.len == 0) ReportError(it);
+            IO_Printf("[%d] %Q = %Q\n", i, key, value);
+
+            CMDLine.put(key, value);
+        }
+        else ReportError(it);
+    }
+
     SRC_InitCache(Perm, S8_Lit("build_file.cache"));
     int result = Main();
     if (result == 0) SRC_SaveCache();

@@ -203,11 +203,40 @@ struct Table {
         return &v->value;
     }
 
+    Value get(uint64_t key, Value default_value) {
+        Entry *v = get_table_entry(key);
+        if (!v) return default_value;
+        return v->value;
+    }
+
     Value *gets(char *str) {
         int len = TABLE_CStringLen(str);
         uint64_t hash = TABLE_HASH_BYTES(str, len);
         return get(hash);
     }
+
+    Value gets(char *str, Value default_value) {
+        int len = TABLE_CStringLen(str);
+        uint64_t hash = TABLE_HASH_BYTES(str, len);
+        return get(hash, default_value);
+    }
+
+    #ifdef S8_HEADER
+    Value *get(S8_String s) {
+        uint64_t hash = TABLE_HASH_BYTES(s.str. (unsigned)s.len);
+        return get(hash);
+    }
+
+    Value get(S8_String s, Value default_value) {
+        uint64_t hash = TABLE_HASH_BYTES(s.str. (unsigned)s.len);
+        return get(hash, default_value);
+    }
+
+    void put(S8_String s, const Value &value) {
+        uint64_t hash = TABLE_HASH_BYTES(s.str, (unsigned)s.len);
+        insert(hash, value);
+    }
+    #endif
 
     void puts(char *str, const Value &value) {
         int len = TABLE_CStringLen(str);

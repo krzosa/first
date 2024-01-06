@@ -7,13 +7,20 @@ int main(int argument_count, char **arguments) {
     IO_Printf("WORKING DIR: %Q\n", OS_GetWorkingDir(Perm));
 
     S8_String cc = ON_WINDOWS("cl"_s) ON_MAC("clang"_s) ON_LINUX("gcc"_s);
+    S8_String cache_filename = "build_tool.cache"_s;
 
+    S8_String cmdline_args = S8_MakeEmpty();
     for (int i = 1; i < argument_count; i += 1) {
         S8_String arg = S8_MakeFromChar(arguments[i]);
-        if (arg == "clear_cache"_s) OS_DeleteFile("build_tool.cache"_s);
+        if (arg == "clear_cache"_s) {
+            OS_DeleteFile(cache_filename);
+            break;
+        }
+
+        cmdline_args = S8_Format(Perm, "%Q%Q ", cmdline_args, arg);
     }
 
-    SRC_InitCache(Perm, S8_Lit("build_tool.cache"));
+    SRC_InitCache(Perm, cache_filename);
 
     // Search for build file in the project directory
     S8_String build_file = {0};
@@ -62,7 +69,7 @@ int main(int argument_count, char **arguments) {
     // Run the build file
     double time = OS_GetTime();
     if (build_file.str) {
-        int result = OS_SystemF("%s%Q", IF_WINDOWS_ELSE("", "./"), exe_name);
+        int result = OS_SystemF(IF_WINDOWS_ELSE("", "./") "%Q %Q", exe_name, cmdline_args);
         if (result != 0) {
             printf("FAILED execution of the build file!\n");
             return result;

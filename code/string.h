@@ -1,4 +1,5 @@
 #pragma once
+#define S8_HEADER
 #include <stdint.h>
 #include <stdbool.h>
 
