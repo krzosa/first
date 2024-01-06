@@ -223,12 +223,12 @@ struct Table {
 
     #ifdef S8_HEADER
     Value *get(S8_String s) {
-        uint64_t hash = TABLE_HASH_BYTES(s.str. (unsigned)s.len);
+        uint64_t hash = TABLE_HASH_BYTES(s.str, (unsigned)s.len);
         return get(hash);
     }
 
     Value get(S8_String s, Value default_value) {
-        uint64_t hash = TABLE_HASH_BYTES(s.str. (unsigned)s.len);
+        uint64_t hash = TABLE_HASH_BYTES(s.str, (unsigned)s.len);
         return get(hash, default_value);
     }
 
