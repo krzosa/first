@@ -96,8 +96,10 @@
 
 #if OS_LINUX
     #define ON_LINUX(x) x
+    #define IF_LINUX_ELSE(x, y) x
 #else
     #define ON_LINUX(x)
+    #define IF_LINUX_ELSE(x, y) y
 #endif
 
 // #if COMPILER_CLANG

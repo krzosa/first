@@ -546,7 +546,7 @@ OS_API int64_t OS_GetFileModTime(S8_String file) {
 
     struct stat attrib = {};
     stat(file.str, &attrib);
-    struct timespec ts = attrib.st_mtim;
+    struct timespec ts = attrib.IF_LINUX_ELSE(st_mtim, st_mtimespec);
     int64_t result = (((int64_t)ts.tv_sec) * 1000000ll) + ((int64_t)ts.tv_nsec) / 1000ll;
 
     MA_ReleaseScratch(scratch);
