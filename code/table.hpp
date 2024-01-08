@@ -123,6 +123,7 @@ struct Table {
     }
 
     Entry *get_table_entry(uint64_t key) {
+        if (len == 0) return 0;
         uint64_t hash = TABLE_HASH_BYTES(&key, sizeof(key));
         if (hash == 0) hash += 1;
         uint64_t index = TABLE__WRAP_AROUND_POWER_OF_2(hash, cap);

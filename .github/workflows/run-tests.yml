@@ -7,7 +7,7 @@ jobs:
       - run: sudo apt install g++
       - run: g++ code/build_main.cpp -o bld && ./bld
   run-and-compile-mac:
-    runs-on: mac-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - run: brew install llvm
