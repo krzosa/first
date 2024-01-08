@@ -357,5 +357,6 @@ int main(int argc, char **argv) {
     SRC_InitCache(Perm, S8_Lit("build_file.cache"));
     int result = Main();
     if (result == 0) SRC_SaveCache();
+    return result;
 }
 #endif

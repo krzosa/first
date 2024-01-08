@@ -60,7 +60,7 @@ int main(int argument_count, char **arguments) {
 
         if (result != 0) {
             IO_Printf("FAILED compilation of the build file!\n");
-            return result;
+            return 1;
         }
         time = OS_GetTime() - time;
         IO_Printf("TIME Build file compilation: %f\n", time);
@@ -72,7 +72,7 @@ int main(int argument_count, char **arguments) {
         int result = OS_SystemF(IF_WINDOWS_ELSE("", "./") "%Q %Q", exe_name, cmdline_args);
         if (result != 0) {
             printf("FAILED execution of the build file!\n");
-            return result;
+            return 1;
         }
     }
     time = OS_GetTime() - time;
