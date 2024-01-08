@@ -10,7 +10,7 @@ int CompileFiles(Strs files) {
         result = OS_SystemF("g++ -o %Q.exe %Q -g -Wno-write-strings", exe, filestr);
     }
     else if (cc == "clang") {
-        result = OS_SystemF("clang++ -o %Q.exe %Q -g -Wno-writable-strings", exe, filestr);
+        result = OS_SystemF("clang++ -std=c++11 -o %Q.exe %Q -g -Wno-writable-strings", exe, filestr);
     }
     else {
         result = OS_SystemF("cl -Fe:%Q.exe %Q -Zi -WX -W3 -wd4200 -diagnostics:column -nologo -D_CRT_SECURE_NO_WARNINGS", exe, filestr);

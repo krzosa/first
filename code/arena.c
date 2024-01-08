@@ -417,7 +417,7 @@ MA_API bool MV_DecommitPos(MV_Memory *m, size_t pos) {
     return false;
 }
 
-#elif __unix__ // _WIN32
+#else
     #include <sys/mman.h>
     #define MV__UNIX_PAGE_SIZE 4096
 MA_API MV_Memory MV_Reserve(size_t size) {
@@ -448,6 +448,4 @@ MA_API void MV_Deallocate(MV_Memory *m) {
     int result = munmap(m->data, m->reserve);
     MA_ASSERT(result == 0 && "Failed to release virtual memory using munmap");
 }
-#else
-    #error "unhandled arena platform"
-#endif // __unix__
+#endif
