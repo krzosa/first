@@ -51,7 +51,7 @@ int main(int argument_count, char **arguments) {
             result = OS_SystemF("cl %Q -Fe:%Q -WX -W3 -wd4200 -diagnostics:column -nologo -Zi", build_file, exe_name);
         }
         else if (cc == "clang"_s) {
-            result = OS_SystemF("clang -Wno-writable-strings %Q -o %Q -g", build_file, exe_name);
+            result = OS_SystemF("clang++  -std=c++11 -Wno-writable-strings %Q -o %Q -g", build_file, exe_name);
         }
         else {
             IO_Assert(cc == "gcc"_s);
