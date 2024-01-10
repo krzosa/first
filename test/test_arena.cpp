@@ -18,6 +18,15 @@ void TestBootstrapArenaClear() {
     for (int i = 0; i < 1024; i += 1) {
         IO_Assert(vals[i] == i);
     }
+
+    size_t len = arena->len;
+    MA_PopSize(arena, 512);
+    IO_Assert(len == arena->len + 512);
+    ((char *)arena->memory.data)[arena->len - 1] = 0;
+
+    MA_PopToPos(arena, 512);
+    IO_Assert(arena->len == 512);
+    ((char *)arena->memory.data)[arena->len - 1] = 0;
 }
 
 void TestScratch() {

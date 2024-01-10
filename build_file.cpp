@@ -1,6 +1,7 @@
 #include "code/build_lib.cpp"
 
-int CompileFiles(Strs cc, Strs files);
+void CompileFiles(Strs cc, Strs files);
+int ReturnValue = 0;
 
 int Main() {
     Strs cc = CMDLine.get("cc"_s, ON_WINDOWS("cl"_s) ON_MAC("clang"_s) ON_LINUX("gcc"_s));
@@ -12,10 +13,10 @@ int Main() {
         }
     }
 
-    return 0;
+    return ReturnValue;
 }
 
-int CompileFiles(Strs cc, Strs files) {
+void CompileFiles(Strs cc, Strs files) {
     int result = 0;
     Str exe = FilenameWithoutExt(files[0]);
     Str filestr = Merge(files);
@@ -28,6 +29,11 @@ int CompileFiles(Strs cc, Strs files) {
     else {
         result = OS_SystemF("cl -Fe:%Q.exe %Q -Zi -WX -W3 -wd4200 -diagnostics:column -nologo -D_CRT_SECURE_NO_WARNINGS -fsanitize=address -RTC1", exe, filestr);
     }
-    if (result == 0) result = OS_SystemF(IF_WINDOWS_ELSE("", "./") "%Q.exe", exe);
-    return result;
+
+    if (result == 0) {
+        result = OS_SystemF(IF_WINDOWS_ELSE("", "./") "%Q.exe", exe);
+    }
+    else {
+        ReturnValue = result;
+    }
 }

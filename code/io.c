@@ -58,15 +58,15 @@ IO_API bool IO__FatalErrorf(const char *file, int line, const char *msg, ...) {
         char buff2[2048];
         char *result = buff2;
         char *b = 0;
-        int size = IO_SNPRINTF(buff2, sizeof(buff2), "%s(%d): error: %s \n", file, line, user_message);
-        if (size >= sizeof(buff2)) {
-            size += 4;
-            b = (char *)IO_ALLOCATE(size);
-            size = IO_SNPRINTF(b, size, "%s(%d): error: %s \n", file, line, user_message);
+        int size2 = IO_SNPRINTF(buff2, sizeof(buff2), "%s(%d): error: %s \n", file, line, user_message);
+        if (size2 >= sizeof(buff2)) {
+            size2 += 4;
+            b = (char *)IO_ALLOCATE(size2);
+            size2 = IO_SNPRINTF(b, size2, "%s(%d): error: %s \n", file, line, user_message);
             result = b;
         }
 
-        ret = IO_OutputError(result, size);
+        ret = IO_OutputError(result, size2);
         if (ret == IO_ErrorResult_Exit) {
             IO_Exit(1);
         }

@@ -33,38 +33,11 @@ MA_API void MA_MemoryCopy(void *dst, void *src, size_t size) {
     #endif
 #endif
 
-// Marks memory region [addr, addr+size) as unaddressable.
-// This memory must be previously allocated by the user program. Accessing
-// addresses in this region from instrumented code is forbidden until
-// this region is unpoisoned. This function is not guaranteed to poison
-// the whole region - it may poison only subregion of [addr, addr+size) due
-// to ASan alignment restrictions.
-// Method is NOT thread-safe in the sense that no two threads can
-// (un)poison memory in the same memory region simultaneously.
-void __asan_poison_memory_region(void const volatile *addr, size_t size);
-// Marks memory region [addr, addr+size) as addressable.
-// This memory must be previously allocated by the user program. Accessing
-// addresses in this region is allowed until this region is poisoned again.
-// This function may unpoison a superregion of [addr, addr+size) due to
-// ASan alignment restrictions.
-// Method is NOT thread-safe in the sense that no two threads can
-// (un)poison memory in the same memory region simultaneously.
-void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
-
-// User code should use macros instead of functions.
-#if defined(__clang__)
-    #if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
-        #define ASAN_POISON_MEMORY_REGION(addr, size) \
-            __asan_poison_memory_region((addr), (size))
-        #define ASAN_UNPOISON_MEMORY_REGION(addr, size) \
-            __asan_unpoison_memory_region((addr), (size))
-    #endif
-#endif
-#ifndef ASAN_POISON_MEMORY_REGION
-    #define ASAN_POISON_MEMORY_REGION(addr, size) \
-        ((void)(addr), (void)(size))
-    #define ASAN_UNPOISON_MEMORY_REGION(addr, size) \
-        ((void)(addr), (void)(size))
+#if defined(__SANITIZE_ADDRESS__)
+    #include <sanitizer/asan_interface.h>
+#else
+    #define ASAN_POISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
+    #define ASAN_UNPOISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
 #endif
 
 MA_API size_t MA_GetAlignOffset(size_t size, size_t align) {
@@ -107,7 +80,7 @@ MA_API void MA_PopToPos(MA_Arena *arena, size_t pos) {
     pos = MA_CLAMP(pos, arena->base_len, arena->len);
     size_t size = arena->len - pos;
     arena->len = pos;
-    ASAN_POISON_MEMORY_REGION(arena->memory.data + pos, size);
+    ASAN_POISON_MEMORY_REGION(arena->memory.data + arena->len, size);
 }
 
 MA_API void MA_PopSize(MA_Arena *arena, size_t size) {
@@ -158,7 +131,7 @@ MA_API void *MA_PushSizeNonZeroed(MA_Arena *a, size_t size) {
     uint8_t *result = a->memory.data + aligned_len;
     a->len += size_with_alignment;
     MA_ASSERT(a->len <= a->memory.commit);
-    ASAN_UNPOISON_MEMORY_REGION(result, a->len);
+    ASAN_UNPOISON_MEMORY_REGION(result, size);
     return (void *)result;
 }
 
@@ -205,6 +178,7 @@ MA_API void MA_InitFromBuffer(MA_Arena *arena, void *buffer, size_t size) {
     arena->memory.commit = size;
     arena->memory.reserve = size;
     arena->alignment = MA_DEFAULT_ALIGNMENT;
+    ASAN_POISON_MEMORY_REGION(arena->memory.data, arena->memory.reserve);
 }
 
 MA_API MA_Arena MA_MakeFromBuffer(void *buffer, size_t size) {

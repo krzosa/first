@@ -486,6 +486,13 @@ S8_API S8_Node *S8_AddNode(S8_Allocator allocator, S8_List *list, S8_String stri
     return node;
 }
 
+S8_API S8_Node *S8_Add(S8_Allocator allocator, S8_List *list, S8_String string) {
+    S8_String copy = S8_Copy(allocator, string);
+    S8_Node *node = S8_CreateNode(allocator, copy);
+    S8_AddExistingNode(list, node);
+    return node;
+}
+
 S8_API S8_String S8_AddF(S8_Allocator allocator, S8_List *list, const char *str, ...) {
     S8_FORMAT(allocator, str, result);
     S8_AddNode(allocator, list, result);

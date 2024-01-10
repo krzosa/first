@@ -171,11 +171,11 @@ OS_API S8_List OS_ListDir(MA_Arena *arena, S8_String path, unsigned flags) {
             S8_String filename = UTF_CreateStringFromWidechar(scratch.arena, ffd.cFileName, S8_WideLength(ffd.cFileName));
             S8_String rel_abs_path = S8_Format(scratch.arena, "%Q/%Q%Q", it->string, filename, dir ? S8_Lit("/") : S8_Lit(""));
             if (flags & OS_RELATIVE_PATHS) {
-                S8_AddNode(arena, &result, rel_abs_path);
+                S8_Add(arena, &result, rel_abs_path);
             }
             else {
                 S8_String abs_path = OS_GetAbsolutePath(arena, rel_abs_path);
-                S8_AddNode(arena, &result, abs_path);
+                S8_Add(arena, &result, abs_path);
             }
 
             if (dir && flags & OS_RECURSIVE) {
