@@ -1,8 +1,21 @@
 #include "code/build_lib.cpp"
 
-Strs cc = ON_WINDOWS("cl") ON_MAC("clang") ON_LINUX("gcc");
+int CompileFiles(Strs cc, Strs files);
 
-int CompileFiles(Strs files) {
+int Main() {
+    Strs cc = CMDLine.get("cc"_s, ON_WINDOWS("cl"_s) ON_MAC("clang"_s) ON_LINUX("gcc"_s));
+    Strs files = ListDir("../test");
+    CompileFiles(cc, {"../test/main_core_as_header.cpp", "../core.c"});
+    For(files) {
+        if (S8_Find(it, "test_"_s, 0, 0)) {
+            CompileFiles(cc, it);
+        }
+    }
+
+    return 0;
+}
+
+int CompileFiles(Strs cc, Strs files) {
     int result = 0;
     Str exe = FilenameWithoutExt(files[0]);
     Str filestr = Merge(files);
@@ -17,16 +30,4 @@ int CompileFiles(Strs files) {
     }
     if (result == 0) result = OS_SystemF(IF_WINDOWS_ELSE("", "./") "%Q.exe", exe);
     return result;
-}
-
-int Main() {
-    Strs files = ListDir("../test");
-    CompileFiles({"../test/main_core_as_header.cpp", "../core.c"});
-    For(files) {
-        if (S8_Find(it, "test_"_s, 0, 0)) {
-            CompileFiles(it);
-        }
-    }
-
-    return 0;
 }
