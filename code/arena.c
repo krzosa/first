@@ -68,17 +68,14 @@ MA_StaticFunc uint8_t *MV__AdvanceCommit(MV_Memory *m, size_t *commit_size, size
     return result;
 }
 
-MA_API void MA_DeallocateStub(MA_Arena *arena, void *p) {}
-
 MA_API void MA_PopToPos(MA_Arena *arena, size_t pos) {
-    pos = MA_CLAMP_TOP(pos, arena->len);
+    MA_ASSERT(arena->len >= arena->base_len);
+    pos = MA_CLAMP(pos, arena->base_len, arena->len);
     arena->len = pos;
 }
 
-MA_API void *MA_PopSize(MA_Arena *arena, size_t size) {
-    size = MA_CLAMP_TOP(size, arena->len);
-    arena->len -= size;
-    return arena->memory.data + arena->len;
+MA_API void MA_PopSize(MA_Arena *arena, size_t size) {
+    MA_PopToPos(arena, arena->len - size);
 }
 
 MA_API void MA_DeallocateArena(MA_Arena *arena) {
@@ -153,6 +150,7 @@ MA_API MA_Arena *MA_Bootstrap(void) {
     MA_Arena bootstrap_arena = {0};
     MA_Arena *arena = MA_PushStruct(&bootstrap_arena, MA_Arena);
     *arena = bootstrap_arena;
+    arena->base_len = arena->len;
     return arena;
 }
 
@@ -160,6 +158,7 @@ MA_API M_Allocator MA_BootstrapExclusive(void) {
     MA_Arena bootstrap_arena = {0};
     MA_Arena *arena = MA_PushStruct(&bootstrap_arena, MA_Arena);
     *arena = bootstrap_arena;
+    arena->base_len = arena->len;
     return MA_GetExclusiveAllocator(arena);
 }
 

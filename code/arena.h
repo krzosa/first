@@ -80,6 +80,8 @@ struct MA_Arena {
     MV_Memory memory;
     int alignment;
     size_t len;
+    size_t base_len; // When popping to 0 this is the minimum "len" value
+                     // It's so that Bootstrapped arena won't delete itself when Reseting.
 
 #ifdef __cplusplus
     operator M_Allocator() { return {this, MA_AllocatorProc}; }
@@ -130,9 +132,8 @@ MA_API MA_Checkpoint   MA_Save(MA_Arena *arena);
 MA_API void            MA_Load(MA_Checkpoint checkpoint);
 
 MA_API void            MA_PopToPos(MA_Arena *arena, size_t pos);
-MA_API void *          MA_PopSize(MA_Arena *arena, size_t size);
+MA_API void            MA_PopSize(MA_Arena *arena, size_t size);
 MA_API void            MA_DeallocateArena(MA_Arena *arena);
-MA_API void            MA_DeallocateStub(MA_Arena *arena, void *p);
 MA_API void            MA_Reset(MA_Arena *arena);
 
 MA_API void            MA_MemoryZero(void *p, size_t size);

@@ -1,5 +1,25 @@
 #include "../core.c"
 
+void TestBootstrapArenaClear() {
+    MA_Arena *arena = MA_Bootstrap();
+    IO_Assert(arena->base_len != 0);
+
+    MA_PushSize(arena, 1024);
+    MA_Reset(arena);
+
+    int *vals = MA_PushArray(arena, int, 1024);
+    for (int i = 0; i < 1024; i += 1) {
+        vals[i] = i;
+    }
+
+    int *a = MA_PushStruct(arena, int);
+    *a = 1;
+
+    for (int i = 0; i < 1024; i += 1) {
+        IO_Assert(vals[i] == i);
+    }
+}
+
 void TestScratch() {
     MA_Arena *scratch_arena_test = NULL;
     {
@@ -76,4 +96,5 @@ int main() {
     TestCreateAllocate();
     TestBootstrap();
     TestBootstrapExclusive();
+    TestBootstrapArenaClear();
 }
