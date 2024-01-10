@@ -34,6 +34,7 @@ void TestStrings() {
     IO_Assert(table.gets("1")->i == 1);
     IO_Assert(table.gets("2")->i == 2);
     IO_Assert(table.gets("3")->i == 3);
+    table.dealloc();
 }
 
 int main() {

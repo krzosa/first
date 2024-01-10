@@ -47,6 +47,7 @@ void TestRemoveForLoop() {
     IO_Assert(array[5] == 6);
     IO_Assert(array[3] == 3);
     IO_Assert(array.len == 99);
+    array.dealloc();
 }
 
 void TestBasic() {
@@ -114,6 +115,8 @@ void TestCopy() {
 
     IO_Assert(b.cap == b.len && b.len == a.len);
     IO_Assert(a.len == c.len && a.cap == c.cap);
+
+    a.dealloc();
 }
 
 int main() {

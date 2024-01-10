@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-gcc -o bld code/build_main.cpp -g
+gcc -o bld code/build_main.cpp -g 
 ./bld

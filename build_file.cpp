@@ -20,13 +20,13 @@ int CompileFiles(Strs cc, Strs files) {
     Str exe = FilenameWithoutExt(files[0]);
     Str filestr = Merge(files);
     if (cc == "gcc") {
-        result = OS_SystemF("g++ -o %Q.exe %Q -g -Wno-write-strings", exe, filestr);
+        result = OS_SystemF("g++ -o %Q.exe %Q -g -Wno-write-strings -fsanitize=address", exe, filestr);
     }
     else if (cc == "clang") {
-        result = OS_SystemF("clang++ -std=c++11 -o %Q.exe %Q -g -Wno-writable-strings", exe, filestr);
+        result = OS_SystemF("clang++ -std=c++11 -o %Q.exe %Q -g -Wno-writable-strings -fsanitize=address", exe, filestr);
     }
     else {
-        result = OS_SystemF("cl -Fe:%Q.exe %Q -Zi -WX -W3 -wd4200 -diagnostics:column -nologo -D_CRT_SECURE_NO_WARNINGS", exe, filestr);
+        result = OS_SystemF("cl -Fe:%Q.exe %Q -Zi -WX -W3 -wd4200 -diagnostics:column -nologo -D_CRT_SECURE_NO_WARNINGS -fsanitize=address -RTC1", exe, filestr);
     }
     if (result == 0) result = OS_SystemF(IF_WINDOWS_ELSE("", "./") "%Q.exe", exe);
     return result;
