@@ -84,6 +84,9 @@ IO_API bool IO__FatalErrorf(const char *file, int line, const char *msg, ...) {
 }
 
 IO_API void IO_Printf(const char *msg, ...) {
+    // First try to use a static buffer. That can fail because the message
+    // can be bigger then the buffer. Allocate enough memory to fit in that
+    // case.
     va_list args1;
     va_list args2;
     char buff[2048];
