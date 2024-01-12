@@ -23,6 +23,10 @@ RELEASE_LINK = -opt:ref -opt:icf
 /RTC1    = runtime error checks
 /opt:ref = eliminates functions and data that are never referenced
 /opt:icf = eliminates redundant 'COMDAT's
+
+----------------- CLANG -----------------
+FLAGS = -fdiagnostics-absolute-paths -g -Wno-writable-strings
+DEBUG = -fsanitize=address
 */
 
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -37,7 +41,7 @@ RELEASE_LINK = -opt:ref -opt:icf
 #define CL_VSNPRINTF stbsp_vsnprintf
 #define CL_SNPRINTF stbsp_snprintf
 #define AND_CL_STRING_TERMINATE_ON_NEW_LINE
-#include "clexer.c"
+#include "../code/clexer.c"
 
 #define SRC_CACHE_ENTRY_COUNT 1024
 struct SRC_CacheEntry {
@@ -316,7 +320,7 @@ void MakeDir(char *str) { OS_MakeDir(S8_MakeFromChar(str)); }
 void ChangeDir(char *str) { OS_SetWorkingDir(S8_MakeFromChar(str)); }
 int Run(Strs s) {
     Str cmd = Merge(s);
-    return OS_SystemF("%Q", cmd);
+    return OS_SystemF("%.*s", S8_Expand(cmd));
 }
 
 Strs ListDir(char *dir) {
@@ -328,9 +332,9 @@ Strs ListDir(char *dir) {
 
 void ReportError(S8_String it) {
     IO_FatalErrorf("Invalid command line argument syntax! Expected a key value pair!\n"
-                   "Here is the wrong argument: %Q\n"
+                   "Here is the wrong argument: %.*s\n"
                    "Here is a good example: bld.exe profile=release platform=windows\n",
-                   it);
+                   S8_Expand(it));
 }
 
 #ifndef BUILD_MAIN
@@ -347,7 +351,7 @@ int main(int argc, char **argv) {
             S8_String value = S8_Skip(it, idx + 1);
             if (key.len == 0) ReportError(it);
             if (value.len == 0) ReportError(it);
-            IO_Printf("[%d] %Q = %Q\n", i, key, value);
+            IO_Printf("[%d] %.*s = %.*s\n", i, S8_Expand(key), S8_Expand(value));
 
             CMDLine.put(key, value);
         }

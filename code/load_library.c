@@ -14,7 +14,7 @@ LIB_Library LIB_LoadLibrary(char *str) {
 }
 
 void *LIB_LoadSymbol(LIB_Library lib, char *symbol) {
-    void *result = GetProcAddress((HMODULE)lib, symbol);
+    void *result = (void *)GetProcAddress((HMODULE)lib, symbol);
     return result;
 }
 

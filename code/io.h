@@ -21,6 +21,16 @@ typedef enum IO_ErrorResult {
     #define IO_DebugBreak() (IO_Exit(1), 0)
 #endif
 
+#if defined(__has_attribute)
+    #if __has_attribute(format)
+        #define IO__PrintfFormat(fmt, va) __attribute__((format(printf, fmt, va)))
+    #endif
+#endif
+
+#ifndef IO__PrintfFormat
+    #define IO__PrintfFormat(fmt, va)
+#endif
+
 extern void (*IO_User_OutputMessage)(char *str, int len);
 
 #define IO__STRINGIFY(x) #x
@@ -63,8 +73,8 @@ extern void (*IO_User_OutputMessage)(char *str, int len);
     }
 #define IO_Todo() IO_FatalError("This codepath is not implemented yet")
 
-IO_API bool IO__FatalErrorf(const char *file, int line, const char *msg, ...);
-IO_API void IO_Printf(const char *msg, ...);
+IO_API bool IO__FatalErrorf(const char *file, int line, const char *msg, ...) IO__PrintfFormat(3, 4);
+IO_API void IO_Printf(const char *msg, ...) IO__PrintfFormat(1, 2);
 IO_API bool IO__FatalError(char *msg);
 IO_API void IO_Print(char *msg);
 IO_API void IO_OutputMessage(char *str, int len);

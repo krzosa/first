@@ -1,4 +1,4 @@
-#include "code/build_lib.cpp"
+#include "tools/build_lib.cpp"
 
 void CompileFiles(Strs cc, Strs files);
 int ReturnValue = 0;
@@ -21,17 +21,17 @@ void CompileFiles(Strs cc, Strs files) {
     Str exe = FilenameWithoutExt(files[0]);
     Str filestr = Merge(files);
     if (cc == "gcc") {
-        result = OS_SystemF("g++ -o %Q.exe %Q -g -Wno-write-strings -fsanitize=address", exe, filestr);
+        result = OS_SystemF("g++ -o %.*s.exe %.*s -g -Wno-write-strings -fsanitize=address", S8_Expand(exe), S8_Expand(filestr));
     }
     else if (cc == "clang") {
-        result = OS_SystemF("clang++ -std=c++11 -o %Q.exe %Q -g -Wno-writable-strings -fsanitize=address", exe, filestr);
+        result = OS_SystemF("clang++ -std=c++11 -o %.*s.exe %.*s -fdiagnostics-absolute-paths -g -Wno-writable-strings -fsanitize=address", S8_Expand(exe), S8_Expand(filestr));
     }
     else {
-        result = OS_SystemF("cl -Fe:%Q.exe %Q -Zi -WX -W3 -wd4200 -diagnostics:column -nologo -D_CRT_SECURE_NO_WARNINGS -fsanitize=address -RTC1", exe, filestr);
+        result = OS_SystemF("cl -Fe:%.*s.exe %.*s -FC -Zi -WX -W3 -wd4200 -diagnostics:column -nologo -D_CRT_SECURE_NO_WARNINGS -fsanitize=address -RTC1", S8_Expand(exe), S8_Expand(filestr));
     }
 
     if (result == 0) {
-        result = OS_SystemF(IF_WINDOWS_ELSE("", "./") "%Q.exe", exe);
+        result = OS_SystemF(IF_WINDOWS_ELSE("", "./") "%.*s.exe", S8_Expand(exe));
     }
     else {
         ReturnValue = result;

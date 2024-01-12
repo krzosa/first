@@ -38,10 +38,10 @@
     #define TABLE_ASSERT(x) assert(x)
 #endif
 
-#ifndef TABLE_SET_DEFAULT_ALLOCATOR
-    #define TABLE_SET_DEFAULT_ALLOCATOR
 // Example:
 // #define TABLE_SET_DEFAULT_ALLOCATOR if (!allocator) allocator = global_heap;
+#ifndef TABLE_SET_DEFAULT_ALLOCATOR
+    #define TABLE_SET_DEFAULT_ALLOCATOR
 #endif
 
 #ifndef TABLE_HASH_BYTES

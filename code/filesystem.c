@@ -169,7 +169,8 @@ OS_API S8_List OS_ListDir(MA_Arena *arena, S8_String path, unsigned flags) {
 
             bool dir = ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
             S8_String filename = UTF_CreateStringFromWidechar(scratch.arena, ffd.cFileName, S8_WideLength(ffd.cFileName));
-            S8_String rel_abs_path = S8_Format(scratch.arena, "%Q/%Q%Q", it->string, filename, dir ? S8_Lit("/") : S8_Lit(""));
+            S8_String is_dir = dir ? S8_Lit("/") : S8_Lit("");
+            S8_String rel_abs_path = S8_Format(scratch.arena, "%.*s/%.*s%.*s", S8_Expand(it->string), S8_Expand(filename), S8_Expand(is_dir));
             if (flags & OS_RELATIVE_PATHS) {
                 S8_Add(arena, &result, rel_abs_path);
             }
@@ -498,12 +499,12 @@ OS_API S8_List OS_ListDir(MA_Arena *arena, S8_String path, unsigned flags) {
                     continue;
             }
 
-            S8_String n = S8_Format(scratch.arena, "%Q/%s", path, dir->d_name);
+            S8_String n = S8_Format(scratch.arena, "%.*s/%s", S8_Expand(path), dir->d_name);
             if ((flags & OS_RELATIVE_PATHS) == 0) {
                 n = OS_GetAbsolutePath(scratch.arena, n);
             }
             if (dir->d_type == DT_DIR) {
-                n = S8_Format(scratch.arena, "%Q/", n);
+                n = S8_Format(scratch.arena, "%.*s/", S8_Expand(n));
             }
 
             S8_AddNode(arena, &result, S8_Copy(arena, n));
@@ -525,18 +526,18 @@ OS_API OS_Result OS_MakeDir(S8_String path) {
 
 OS_API OS_Result OS_CopyFile(S8_String from, S8_String to, bool overwrite) {
     const char *ow = overwrite ? "-n" : "";
-    int result = OS_SystemF("cp %s %Q %Q", ow, from, to);
+    int result = OS_SystemF("cp %s %.*s %.*s", ow, S8_Expand(from), S8_Expand(to));
     return result == 0 ? OS_SUCCESS : OS_FAILURE;
 }
 
 OS_API OS_Result OS_DeleteFile(S8_String path) {
-    int result = OS_SystemF("rm %Q");
+    int result = OS_SystemF("rm %.*s", S8_Expand(path));
     return result == 0 ? OS_SUCCESS : OS_FAILURE;
 }
 
 OS_API OS_Result OS_DeleteDir(S8_String path, unsigned flags) {
     IO_Assert(flags & OS_RECURSIVE);
-    int result = OS_SystemF("rm -r %Q");
+    int result = OS_SystemF("rm -r %.*s", S8_Expand(path));
     return result == 0 ? OS_SUCCESS : OS_FAILURE;
 }
 

@@ -44,6 +44,16 @@ enum {
     S8_MATCH_FIND_LAST = 32,
 };
 
+#if defined(__has_attribute)
+    #if __has_attribute(format)
+        #define S8__PrintfFormat(fmt, va) __attribute__((format(printf, fmt, va)))
+    #endif
+#endif
+
+#ifndef S8__PrintfFormat
+    #define S8__PrintfFormat(fmt, va)
+#endif
+
 #define S8_Lit(string) S8_Make((char *)string, sizeof(string) - 1)
 #define S8_ConstLit(string) \
     { string, sizeof(string) - 1 }
@@ -104,7 +114,7 @@ S8_API S8_String S8_MakeFromChar(char *string);
 S8_API S8_String S8_MakeEmpty(void);
 S8_API S8_List S8_MakeEmptyList(void);
 S8_API S8_String S8_FormatV(S8_Allocator allocator, const char *str, va_list args1);
-S8_API S8_String S8_Format(S8_Allocator allocator, const char *str, ...);
+S8_API S8_String S8_Format(S8_Allocator allocator, const char *str, ...) S8__PrintfFormat(2, 3);
 S8_API S8_Node *S8_CreateNode(S8_Allocator allocator, S8_String string);
 S8_API void S8_ReplaceNodeString(S8_List *list, S8_Node *node, S8_String new_string);
 S8_API void S8_AddExistingNode(S8_List *list, S8_Node *node);
@@ -115,4 +125,4 @@ S8_API S8_List S8_CopyList(S8_Allocator allocator, S8_List a);
 S8_API S8_List S8_ConcatLists(S8_Allocator allocator, S8_List a, S8_List b);
 S8_API S8_Node *S8_AddNode(S8_Allocator allocator, S8_List *list, S8_String string);
 S8_API S8_Node *S8_Add(S8_Allocator allocator, S8_List *list, S8_String string);
-S8_API S8_String S8_AddF(S8_Allocator allocator, S8_List *list, const char *str, ...);
+S8_API S8_String S8_AddF(S8_Allocator allocator, S8_List *list, const char *str, ...) S8__PrintfFormat(3, 4);
