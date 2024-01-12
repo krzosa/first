@@ -5,13 +5,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: sudo apt install g++
-      - run: g++ tools/build_main.cpp -o bld && ./bld
+      - run: g++ build_tool/build_main.cpp -o bld && ./bld
   run-and-compile-mac:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - run: brew install llvm
-      - run: clang++ tools/build_main.cpp -std=c++11 -o bld && ./bld
+      - run: clang++ build_tool/build_main.cpp -std=c++11 -o bld && ./bld
   run-and-compile-windows:
     runs-on: windows-latest
     steps:

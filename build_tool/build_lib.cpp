@@ -41,7 +41,7 @@ DEBUG = -fsanitize=address
 #define CL_VSNPRINTF stbsp_vsnprintf
 #define CL_SNPRINTF stbsp_snprintf
 #define AND_CL_STRING_TERMINATE_ON_NEW_LINE
-#include "../code/clexer.c"
+#include "../standalone_modules/clexer.c"
 
 #define SRC_CACHE_ENTRY_COUNT 1024
 struct SRC_CacheEntry {

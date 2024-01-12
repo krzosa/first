@@ -1,4 +1,4 @@
-#include "tools/build_lib.cpp"
+#include "build_tool/build_lib.cpp"
 
 void CompileFiles(Strs cc, Strs files);
 int ReturnValue = 0;
