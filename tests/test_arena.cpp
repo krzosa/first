@@ -1,4 +1,4 @@
-#include "../core.c"
+#include "../core_library/core.c"
 
 void TestBootstrapArenaClear() {
     MA_Arena *arena = MA_Bootstrap();

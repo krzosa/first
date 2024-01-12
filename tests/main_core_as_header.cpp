@@ -1,4 +1,4 @@
-#include "../core.h"
+#include "../core_library/core.h"
 
 int main() {
     MA_Arena arena = {};

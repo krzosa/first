@@ -1,4 +1,4 @@
-#include "../core.c"
+#include "../core_library/core.c"
 void TestExclusiveArenaBackedArray() {
     MA_Scratch scratch;
     MA_Arena ex = MA_Create();

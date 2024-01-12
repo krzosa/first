@@ -5,8 +5,8 @@ int ReturnValue = 0;
 
 int Main() {
     Strs cc = CMDLine.get("cc"_s, ON_WINDOWS("cl"_s) ON_MAC("clang"_s) ON_LINUX("gcc"_s));
-    Strs files = ListDir("../test");
-    CompileFiles(cc, {"../test/main_core_as_header.cpp", "../core.c"});
+    Strs files = ListDir("../tests");
+    CompileFiles(cc, {"../tests/main_core_as_header.cpp", "../core_library/core.c"});
     For(files) {
         if (S8_Find(it, "test_"_s, 0, 0)) {
             CompileFiles(cc, it);

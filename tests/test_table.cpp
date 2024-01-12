@@ -1,4 +1,4 @@
-#include "../core.c"
+#include "../core_library/core.c"
 
 void TestSimpleInsertAndIntegrity() {
     MA_Scratch scratch;

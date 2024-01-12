@@ -33,7 +33,7 @@ DEBUG = -fsanitize=address
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#include "../core.c"
+#include "../core_library/core.c"
 
 #define CL_Arena MA_Arena
 #define CL_PushSize MA_PushSizeNonZeroed
@@ -41,7 +41,7 @@ DEBUG = -fsanitize=address
 #define CL_VSNPRINTF stbsp_vsnprintf
 #define CL_SNPRINTF stbsp_snprintf
 #define AND_CL_STRING_TERMINATE_ON_NEW_LINE
-#include "../standalone_modules/clexer.c"
+#include "../standalone_libraries/clexer.c"
 
 #define SRC_CACHE_ENTRY_COUNT 1024
 struct SRC_CacheEntry {
