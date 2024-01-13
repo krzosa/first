@@ -1,10 +1,14 @@
 #include "../core_library/core.c"
 
 int main() {
-    MA_Scratch scratch;
-    for (OS_FileIter it = OS_IterateFiles(scratch, "../"_s); OS_IsValid(it); OS_Advance(&it)) {
-        IO_Printf("is_directory: %d\n", it.is_directory);
-        IO_Printf("absolute_path: %.*s\n", S8_Expand(it.absolute_path));
-        IO_Printf("relative_path: %.*s\n", S8_Expand(it.relative_path));
+    S8_String s = "mrówka";
+
+    bool found_two_byte = false;
+    For(s) {
+        if (it.utf8_codepoint_byte_size == 2) {
+            found_two_byte = true;
+            IO_Assert(it.i == 2);
+        }
     }
+    IO_Assert(found_two_byte);
 }

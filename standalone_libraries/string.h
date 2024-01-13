@@ -4,11 +4,7 @@
 #include <stdbool.h>
 
 #ifndef S8_API
-    #ifdef __cplusplus
-        #define S8_API extern "C"
-    #else
-        #define S8_API
-    #endif
+    #define S8_API
 #endif
 
 #ifdef __cplusplus
@@ -30,6 +26,35 @@ S8_API int64_t S8_Length(char *string);
 struct S8_String {
     char *str;
     int64_t len;
+#if defined(__cplusplus)
+    S8_String() = default;
+    S8_String(char *s) : str(s), len(S8_Length(s)) {}
+    S8_String(char *s, int64_t l) : str(s), len(l) {}
+    S8_String(const char *s) : str((char *)s), len(S8_Length((char *)s)) {}
+    S8_String(const char *s, int64_t l) : str((char *)s), len(l) {}
+    #if defined(UTF_HEADER)
+    struct Iter {
+        UTF8_Iter i;
+
+        Iter operator++(int) {
+            Iter ret = *this;
+            UTF8_Advance(&i);
+            return ret;
+        }
+
+        Iter &operator++() {
+            UTF8_Advance(&i);
+            return *this;
+        }
+
+        friend bool operator!=(const Iter &a, const Iter &b) { return a.i.item != b.i.item; }
+        UTF8_Iter &operator*() { return i; }
+    };
+
+    Iter begin() { return {UTF8_IterateEx(str, (int)len)}; }
+    Iter end() { return {}; }
+    #endif // UTF_HEADER
+#endif     // __cplusplus
 };
 
 struct S8_Node {
@@ -44,8 +69,6 @@ struct S8_List {
     S8_Node *last;
 };
 
-const int S8_IgnoreCase = true;
-
 typedef int S8_FindFlag;
 enum {
     S8_FindFlag_None = 0,
@@ -59,6 +82,8 @@ enum {
     S8_SplitFlag_IgnoreCase = 1,
     S8_SplitFlag_SplitInclusive = 2,
 };
+
+const bool S8_IgnoreCase = true;
 
 #if defined(__has_attribute)
     #if __has_attribute(format)
@@ -83,12 +108,6 @@ enum {
 
 #define S8_For(it, x) for (S8_Node *it = (x).first; it; it = it->next)
 
-#if defined(__cplusplus)
-S8_API bool S8_AreEqual(S8_String a, S8_String b, unsigned ignore_case);
-inline bool operator==(S8_String a, S8_String b) { return S8_AreEqual(a, b, false); }
-inline S8_String operator""_s(const char *str, size_t size) { return {(char *)str, (int64_t)size}; }
-#endif
-
 S8_API char CHAR_ToLowerCase(char a);
 S8_API char CHAR_ToUpperCase(char a);
 S8_API bool CHAR_IsWhitespace(char w);
@@ -111,7 +130,8 @@ S8_API S8_String S8_Trim(S8_String string);
 S8_API S8_String S8_TrimEnd(S8_String string);
 S8_API S8_String S8_ToLowerCase(S8_Allocator allocator, S8_String s);
 S8_API S8_String S8_ToUpperCase(S8_Allocator allocator, S8_String s);
-S8_API bool S8_Find(S8_String string, S8_String find, S8_FindFlag flags S8_IF_CPP(= S8_FindFlag_None), int64_t *index_out S8_IF_CPP(= 0));
+S8_API bool S8_Seek(S8_String string, S8_String find, S8_FindFlag flags S8_IF_CPP(= S8_FindFlag_None), int64_t *index_out S8_IF_CPP(= 0));
+S8_API int64_t S8_Find(S8_String string, S8_String find, S8_FindFlag flags S8_IF_CPP(= S8_FindFlag_None));
 S8_API S8_String S8_ChopLastSlash(S8_String s);
 S8_API S8_String S8_ChopLastPeriod(S8_String s);
 S8_API S8_String S8_SkipToLastSlash(S8_String s);
@@ -128,7 +148,7 @@ S8_API S8_String S8_FormatV(S8_Allocator allocator, const char *str, va_list arg
 S8_API S8_String S8_Format(S8_Allocator allocator, const char *str, ...) S8__PrintfFormat(2, 3);
 
 S8_API S8_List S8_Split(S8_Allocator allocator, S8_String string, S8_String find, S8_SplitFlag flags S8_IF_CPP(= S8_SplitFlag_None));
-S8_API S8_String S8_MergeWithSeparator(S8_Allocator allocator, S8_List list, S8_String separator S8_IF_CPP(= " "_s));
+S8_API S8_String S8_MergeWithSeparator(S8_Allocator allocator, S8_List list, S8_String separator S8_IF_CPP(= S8_Lit(" ")));
 S8_API S8_String S8_Merge(S8_Allocator allocator, S8_List list);
 S8_API S8_String S8_ReplaceAll(S8_Allocator allocator, S8_String string, S8_String replace, S8_String with, bool ignore_case S8_IF_CPP(= false));
 S8_API S8_List S8_FindAll(S8_Allocator allocator, S8_String string, S8_String find, bool ignore_case S8_IF_CPP(= false));
@@ -144,3 +164,9 @@ S8_API S8_List S8_ConcatLists(S8_Allocator allocator, S8_List a, S8_List b);
 S8_API S8_Node *S8_AddNode(S8_Allocator allocator, S8_List *list, S8_String string);
 S8_API S8_Node *S8_Add(S8_Allocator allocator, S8_List *list, S8_String string);
 S8_API S8_String S8_AddF(S8_Allocator allocator, S8_List *list, const char *str, ...) S8__PrintfFormat(3, 4);
+
+#if defined(__cplusplus)
+inline S8_String operator""_s(const char *str, size_t size) { return {(char *)str, (int64_t)size}; }
+inline bool operator==(S8_String a, S8_String b) { return S8_AreEqual(a, b, 0); }
+inline bool operator!=(S8_String a, S8_String b) { return !S8_AreEqual(a, b, 0); }
+#endif

@@ -678,7 +678,7 @@ OS_API bool OS_ExpandIncludesList(MA_Arena *arena, S8_List *out, S8_String filep
     S8_String include = S8_Lit("#include \"");
     for (;;) {
         int64_t idx = -1;
-        if (S8_Find(c, include, 0, &idx)) {
+        if (S8_Seek(c, include, 0, &idx)) {
             S8_String str_to_add = S8_GetPrefix(c, idx);
             S8_AddNode(arena, out, str_to_add);
             S8_String save = c;
@@ -706,8 +706,8 @@ OS_API bool OS_ExpandIncludesList(MA_Arena *arena, S8_List *out, S8_String filep
 }
 
 OS_API S8_String OS_ExpandIncludes(MA_Arena *arena, S8_String filepath) {
-    S8_List out = {0};
-    S8_String result = {0};
+    S8_List out = S8_MakeEmptyList();
+    S8_String result = S8_MakeEmpty();
     MA_ScratchScope(s) {
         OS_ExpandIncludesList(s.arena, &out, filepath);
         result = S8_Merge(arena, out);

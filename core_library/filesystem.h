@@ -1,11 +1,7 @@
 // Quick and dirty filesystem operations
 
 #ifndef OS_API
-    #ifdef __cplusplus
-        #define OS_API extern "C"
-    #else
-        #define OS_API
-    #endif
+    #define OS_API
 #endif
 
 typedef enum OS_Result {

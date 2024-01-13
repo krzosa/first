@@ -258,7 +258,7 @@ S8_API S8_String S8_ToUpperCase(S8_Allocator allocator, S8_String s) {
     return copy;
 }
 
-S8_API bool S8_Find(S8_String string, S8_String find, S8_FindFlag flags, int64_t *index_out) {
+S8_API bool S8_Seek(S8_String string, S8_String find, S8_FindFlag flags, int64_t *index_out) {
     bool ignore_case = flags & S8_FindFlag_IgnoreCase ? true : false;
     bool result = false;
     if (flags & S8_FindFlag_MatchFindLast) {
@@ -288,12 +288,18 @@ S8_API bool S8_Find(S8_String string, S8_String find, S8_FindFlag flags, int64_t
     return result;
 }
 
+S8_API int64_t S8_Find(S8_String string, S8_String find, S8_FindFlag flag) {
+    int64_t result = -1;
+    S8_Seek(string, find, flag, &result);
+    return result;
+}
+
 S8_API S8_List S8_Split(S8_Allocator allocator, S8_String string, S8_String find, S8_SplitFlag flags) {
     S8_List result = S8_MakeEmptyList();
     int64_t index = 0;
 
     S8_FindFlag find_flag = flags & S8_SplitFlag_IgnoreCase ? S8_FindFlag_IgnoreCase : S8_FindFlag_None;
-    while (S8_Find(string, find, find_flag, &index)) {
+    while (S8_Seek(string, find, find_flag, &index)) {
         S8_String before_match = S8_Make(string.str, index);
         S8_AddNode(allocator, &result, before_match);
         if (flags & S8_SplitFlag_SplitInclusive) {
@@ -350,7 +356,7 @@ S8_API S8_List S8_FindAll(S8_Allocator allocator, S8_String string, S8_String fi
     int64_t index = 0;
 
     S8_FindFlag find_flag = ignore_case ? S8_FindFlag_IgnoreCase : 0;
-    while (S8_Find(string, find, find_flag, &index)) {
+    while (S8_Seek(string, find, find_flag, &index)) {
         S8_String match = S8_Make(string.str + index, find.len);
         S8_AddNode(allocator, &result, match);
         string = S8_Skip(string, index + find.len);
@@ -360,20 +366,20 @@ S8_API S8_List S8_FindAll(S8_Allocator allocator, S8_String string, S8_String fi
 
 S8_API S8_String S8_ChopLastSlash(S8_String s) {
     S8_String result = s;
-    S8_Find(s, S8_Lit("/"), S8_FindFlag_MatchFindLast, &result.len);
+    S8_Seek(s, S8_Lit("/"), S8_FindFlag_MatchFindLast, &result.len);
     return result;
 }
 
 S8_API S8_String S8_ChopLastPeriod(S8_String s) {
     S8_String result = s;
-    S8_Find(s, S8_Lit("."), S8_FindFlag_MatchFindLast, &result.len);
+    S8_Seek(s, S8_Lit("."), S8_FindFlag_MatchFindLast, &result.len);
     return result;
 }
 
 S8_API S8_String S8_SkipToLastSlash(S8_String s) {
     int64_t pos;
     S8_String result = s;
-    if (S8_Find(s, S8_Lit("/"), S8_FindFlag_MatchFindLast, &pos)) {
+    if (S8_Seek(s, S8_Lit("/"), S8_FindFlag_MatchFindLast, &pos)) {
         result = S8_Skip(result, pos + 1);
     }
     return result;
@@ -382,7 +388,7 @@ S8_API S8_String S8_SkipToLastSlash(S8_String s) {
 S8_API S8_String S8_SkipToLastPeriod(S8_String s) {
     int64_t pos;
     S8_String result = s;
-    if (S8_Find(s, S8_Lit("."), S8_FindFlag_MatchFindLast, &pos)) {
+    if (S8_Seek(s, S8_Lit("."), S8_FindFlag_MatchFindLast, &pos)) {
         result = S8_Skip(result, pos + 1);
     }
     return result;

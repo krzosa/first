@@ -24,10 +24,10 @@ int main(int argument_count, char **arguments) {
     SRC_InitCache(Perm, cache_filename);
 
     // Search for build file in the project directory
-    S8_String build_file = {0};
+    S8_String build_file = {};
     {
         for (OS_FileIter it = OS_IterateFiles(Perm, S8_Lit("..")); OS_IsValid(it); OS_Advance(&it)) {
-            if (S8_Find(it.filename, S8_Lit("build_file.c"), S8_IgnoreCase)) {
+            if (S8_Seek(it.filename, S8_Lit("build_file.c"), S8_IgnoreCase)) {
                 build_file = it.absolute_path;
             }
         }

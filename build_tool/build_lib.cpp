@@ -224,7 +224,7 @@ int main(int argc, char **argv) {
         S8_String it = S8_MakeFromChar(argv[i]);
 
         int64_t idx = 0;
-        if (S8_Find(it, "="_s, 0, &idx)) {
+        if (S8_Seek(it, "="_s, 0, &idx)) {
             S8_String key = S8_GetPrefix(it, idx);
             S8_String value = S8_Skip(it, idx + 1);
             if (key.len == 0) ReportError(it);

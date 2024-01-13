@@ -67,11 +67,21 @@ int main() {
         IO_Assert(OS_IsAbsolute(work_path));
         IO_Assert(OS_IsAbsolute(abs_path));
 
-        IO_Assert(S8_Find(exe_path, S8_Lit("/test_filesystem"), 0, 0));
-        IO_Assert(S8_Find(exe_path, S8_Lit("/build"), 0, 0));
-        IO_Assert(S8_Find(dir_path, S8_Lit("/build"), 0, 0));
-        IO_Assert(S8_Find(work_path, S8_Lit("/build"), 0, 0));
-        IO_Assert(S8_Find(abs_path, S8_Lit("/tests/data"), 0, 0));
-        IO_Assert(!S8_Find(abs_path, S8_Lit("../"), 0, 0));
+        IO_Assert(S8_Seek(exe_path, S8_Lit("/test_filesystem"), 0, 0));
+        IO_Assert(S8_Seek(exe_path, S8_Lit("/build"), 0, 0));
+        IO_Assert(S8_Seek(dir_path, S8_Lit("/build"), 0, 0));
+        IO_Assert(S8_Seek(work_path, S8_Lit("/build"), 0, 0));
+        IO_Assert(S8_Seek(abs_path, S8_Lit("/tests/data"), 0, 0));
+        IO_Assert(!S8_Seek(abs_path, S8_Lit("../"), 0, 0));
+    }
+
+    {
+        for (OS_FileIter it = OS_IterateFiles(&arena, S8_Lit("..")); OS_IsValid(it); OS_Advance(&it)) {
+            if (it.is_directory) {
+                IO_Assert(it.absolute_path.str[it.absolute_path.len - 1] == '/');
+            }
+            IO_Assert(!S8_Seek(it.absolute_path, S8_Lit(".."), 0, 0));
+            IO_Assert(S8_Seek(it.relative_path, S8_Lit(".."), 0, 0));
+        }
     }
 }

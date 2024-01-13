@@ -1,4 +1,5 @@
 #pragma once
+#define UTF_HEADER
 #include <stdint.h>
 typedef struct UTF32_Result UTF32_Result;
 typedef struct UTF8_Result UTF8_Result;
