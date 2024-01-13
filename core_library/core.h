@@ -12,7 +12,7 @@
 #include "../standalone_libraries/load_library.h"
 #include "filesystem.h"
 
-#ifdef __cplusplus
+#if LANG_CPP
     #include "../standalone_libraries/defer.hpp"
     #define TABLE_ASSERT IO_Assert
     #define TABLE_Allocator M_Allocator
@@ -28,4 +28,5 @@
     #define ARRAY_SET_DEFAULT_ALLOCATOR \
         if (!allocator.p) allocator = M_GetSystemAllocator();
     #include "../standalone_libraries/array.hpp"
+// #include "string.hpp"
 #endif

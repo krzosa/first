@@ -28,7 +28,7 @@ int main(int argument_count, char **arguments) {
     {
         S8_List files_current_dir = OS_ListDir(Perm, S8_Lit(".."), 0);
         for (S8_Node *it = files_current_dir.first; it; it = it->next) {
-            if (S8_Find(it->string, S8_Lit("build_file.c"), S8_IGNORE_CASE, 0)) {
+            if (S8_Find(it->string, S8_Lit("build_file.c"), S8_IgnoreCase)) {
                 build_file = it->string;
             }
         }

@@ -74,7 +74,7 @@ S8_API bool S8_AreEqual(S8_String a, S8_String b, unsigned ignore_case) {
     for (int64_t i = 0; i < a.len; i++) {
         char A = a.str[i];
         char B = b.str[i];
-        if (ignore_case & S8_IGNORE_CASE) {
+        if (ignore_case) {
             A = CHAR_ToLowerCase(A);
             B = CHAR_ToLowerCase(B);
         }
@@ -169,6 +169,10 @@ S8_API S8_String S8_GetPrefix(S8_String string, int64_t len) {
     return result;
 }
 
+S8_API S8_String S8_GetNameNoExtension(S8_String s) {
+    return S8_SkipToLastSlash(S8_ChopLastPeriod(s));
+}
+
 S8_API S8_String S8_Slice(S8_String string, int64_t first_index, int64_t one_past_last_index) {
     if (one_past_last_index < 0) one_past_last_index = string.len + one_past_last_index + 1;
     if (first_index < 0) first_index = string.len + first_index;
@@ -245,13 +249,14 @@ S8_API S8_String S8_ToUpperCase(S8_Allocator allocator, S8_String s) {
     return copy;
 }
 
-S8_API bool S8_Find(S8_String string, S8_String find, unsigned flags, int64_t *index_out) {
+S8_API bool S8_Find(S8_String string, S8_String find, S8_FindFlag flags, int64_t *index_out) {
+    bool ignore_case = flags & S8_FindFlag_IgnoreCase ? true : false;
     bool result = false;
-    if (flags & S8_MATCH_FIND_LAST) {
+    if (flags & S8_FindFlag_MatchFindLast) {
         for (int64_t i = string.len; i != 0; i--) {
             int64_t index = i - 1;
             S8_String substring = S8_Slice(string, index, index + find.len);
-            if (S8_AreEqual(substring, find, flags)) {
+            if (S8_AreEqual(substring, find, ignore_case)) {
                 if (index_out)
                     *index_out = index;
                 result = true;
@@ -262,7 +267,7 @@ S8_API bool S8_Find(S8_String string, S8_String find, unsigned flags, int64_t *i
     else {
         for (int64_t i = 0; i < string.len; i++) {
             S8_String substring = S8_Slice(string, i, i + find.len);
-            if (S8_AreEqual(substring, find, flags)) {
+            if (S8_AreEqual(substring, find, ignore_case)) {
                 if (index_out)
                     *index_out = i;
                 result = true;
@@ -274,14 +279,15 @@ S8_API bool S8_Find(S8_String string, S8_String find, unsigned flags, int64_t *i
     return result;
 }
 
-S8_API S8_List S8_Split(S8_Allocator allocator, S8_String string, S8_String find, unsigned flags) {
-    S8_ASSERT((flags & S8_MATCH_FIND_LAST) == 0);
+S8_API S8_List S8_Split(S8_Allocator allocator, S8_String string, S8_String find, S8_SplitFlag flags) {
     S8_List result = S8_MakeEmptyList();
     int64_t index = 0;
-    while (S8_Find(string, find, flags, &index)) {
+
+    S8_FindFlag find_flag = flags & S8_SplitFlag_IgnoreCase ? S8_FindFlag_IgnoreCase : S8_FindFlag_None;
+    while (S8_Find(string, find, find_flag, &index)) {
         S8_String before_match = S8_Make(string.str, index);
         S8_AddNode(allocator, &result, before_match);
-        if (flags & S8_SPLIT_INCLUSIVE) {
+        if (flags & S8_SplitFlag_SplitInclusive) {
             S8_String match = S8_Make(string.str + index, find.len);
             S8_AddNode(allocator, &result, match);
         }
@@ -294,7 +300,7 @@ S8_API S8_List S8_Split(S8_Allocator allocator, S8_String string, S8_String find
 S8_API S8_String S8_MergeWithSeparator(S8_Allocator allocator, S8_List list, S8_String separator) {
     if (list.node_count == 0) return S8_MakeEmpty();
     if (list.char_count == 0) return S8_MakeEmpty();
-    // S8_ASSERT((flags & S8_MATCH_FIND_LAST) == 0);
+
     int64_t base_size = (list.char_count + 1);
     int64_t sep_size = (list.node_count - 1) * separator.len;
     int64_t size = base_size + sep_size;
@@ -318,11 +324,11 @@ S8_API S8_String S8_Merge(S8_Allocator allocator, S8_List list) {
     return S8_MergeWithSeparator(allocator, list, S8_Lit(""));
 }
 
-S8_API S8_String S8_ReplaceAll(S8_Allocator allocator, S8_String string, S8_String replace, S8_String with, unsigned flags) {
-    S8_ASSERT((flags & S8_MATCH_FIND_LAST) == 0);
-    S8_List list = S8_Split(allocator, string, replace, flags | S8_SPLIT_INCLUSIVE);
+S8_API S8_String S8_ReplaceAll(S8_Allocator allocator, S8_String string, S8_String replace, S8_String with, bool ignore_case) {
+    S8_SplitFlag split_flag = ignore_case ? S8_SplitFlag_IgnoreCase : S8_SplitFlag_None;
+    S8_List list = S8_Split(allocator, string, replace, split_flag | S8_SplitFlag_SplitInclusive);
     for (S8_Node *it = list.first; it; it = it->next) {
-        if (S8_AreEqual(it->string, replace, flags)) {
+        if (S8_AreEqual(it->string, replace, ignore_case)) {
             S8_ReplaceNodeString(&list, it, with);
         }
     }
@@ -330,11 +336,12 @@ S8_API S8_String S8_ReplaceAll(S8_Allocator allocator, S8_String string, S8_Stri
     return result;
 }
 
-S8_API S8_List S8_FindAll(S8_Allocator allocator, S8_String string, S8_String find, unsigned flags) { // @untested
-    S8_ASSERT((flags & S8_MATCH_FIND_LAST) == 0);
+S8_API S8_List S8_FindAll(S8_Allocator allocator, S8_String string, S8_String find, bool ignore_case) { // @untested
     S8_List result = S8_MakeEmptyList();
     int64_t index = 0;
-    while (S8_Find(string, find, flags, &index)) {
+
+    S8_FindFlag find_flag = ignore_case ? S8_FindFlag_IgnoreCase : 0;
+    while (S8_Find(string, find, find_flag, &index)) {
         S8_String match = S8_Make(string.str + index, find.len);
         S8_AddNode(allocator, &result, match);
         string = S8_Skip(string, index + find.len);
@@ -344,20 +351,20 @@ S8_API S8_List S8_FindAll(S8_Allocator allocator, S8_String string, S8_String fi
 
 S8_API S8_String S8_ChopLastSlash(S8_String s) {
     S8_String result = s;
-    S8_Find(s, S8_Lit("/"), S8_MATCH_FIND_LAST, &result.len);
+    S8_Find(s, S8_Lit("/"), S8_FindFlag_MatchFindLast, &result.len);
     return result;
 }
 
 S8_API S8_String S8_ChopLastPeriod(S8_String s) {
     S8_String result = s;
-    S8_Find(s, S8_Lit("."), S8_MATCH_FIND_LAST, &result.len);
+    S8_Find(s, S8_Lit("."), S8_FindFlag_MatchFindLast, &result.len);
     return result;
 }
 
 S8_API S8_String S8_SkipToLastSlash(S8_String s) {
     int64_t pos;
     S8_String result = s;
-    if (S8_Find(s, S8_Lit("/"), S8_MATCH_FIND_LAST, &pos)) {
+    if (S8_Find(s, S8_Lit("/"), S8_FindFlag_MatchFindLast, &pos)) {
         result = S8_Skip(result, pos + 1);
     }
     return result;
@@ -366,7 +373,7 @@ S8_API S8_String S8_SkipToLastSlash(S8_String s) {
 S8_API S8_String S8_SkipToLastPeriod(S8_String s) {
     int64_t pos;
     S8_String result = s;
-    if (S8_Find(s, S8_Lit("."), S8_MATCH_FIND_LAST, &pos)) {
+    if (S8_Find(s, S8_Lit("."), S8_FindFlag_MatchFindLast, &pos)) {
         result = S8_Skip(result, pos + 1);
     }
     return result;

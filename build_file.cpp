@@ -8,7 +8,7 @@ int Main() {
     Strs files = ListDir("../tests");
     CompileFiles(cc, {"../tests/main_core_as_header.cpp", "../core_library/core.c"});
     For(files) {
-        if (S8_Find(it, "test_"_s, 0, 0)) {
+        if (S8_Find(it, "test_"_s)) {
             CompileFiles(cc, it);
         }
     }
