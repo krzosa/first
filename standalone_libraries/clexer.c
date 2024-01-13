@@ -206,7 +206,7 @@ CL_PRIVATE_FUNCTION CL_UTF32Result CL_UTF8ToUTF32(char *c, int max_advance) {
 }
 
 // @todo I think I should look at this again
-CL_API_FUNCTION void CL_ParseCharLiteral(CL_Lexer *T, CL_Token *token) {
+CL_PRIVATE_FUNCTION void CL_ParseCharLiteral(CL_Lexer *T, CL_Token *token) {
     token->kind = CL_CHARLIT;
     token->str = T->stream;
     while (*T->stream != '\'') {
@@ -275,7 +275,9 @@ skip_utf_encode:
 // that will combine the string snippets, replace escape sequences with actual values etc.
 //
 // "String 1"  "String 2" - those strings snippets are combined
-CL_API_FUNCTION void CL_CheckString(CL_Lexer *T, CL_Token *token) {
+// @todo: look at this again
+// @todo: make a manual correct version that user can execute if he needs to
+CL_PRIVATE_FUNCTION void CL_CheckString(CL_Lexer *T, CL_Token *token) {
     token->kind = CL_STRINGLIT;
 combine_next_string_literal:
     while (*T->stream != '"' && *T->stream != 0 AND_CL_STRING_TERMINATE_ON_NEW_LINE) {
@@ -335,7 +337,7 @@ combine_next_string_literal:
     CL_SetTokenLength(T, token);
 }
 
-CL_API_FUNCTION void CL_IsIdentifierKeyword(CL_Token *token) {
+CL_PRIVATE_FUNCTION void CL_IsIdentifierKeyword(CL_Token *token) {
     if (token->len == 1) return;
     char *c = token->str;
     switch (c[0]) {
@@ -604,7 +606,7 @@ CL_API_FUNCTION void CL_IsIdentifierKeyword(CL_Token *token) {
     }
 }
 
-CL_API_FUNCTION void CL_LexMacroInclude(CL_Lexer *T, CL_Token *token) {
+CL_PRIVATE_FUNCTION void CL_LexMacroInclude(CL_Lexer *T, CL_Token *token) {
     token->kind = CL_PREPROC_INCLUDE;
     while (*T->stream == ' ') CL_Advance(T);
     char end = 0;
@@ -635,7 +637,7 @@ CL_API_FUNCTION void CL_LexMacroInclude(CL_Lexer *T, CL_Token *token) {
     CL_Advance(T);
 }
 
-CL_API_FUNCTION bool CL_LexMacro(CL_Lexer *T, CL_Token *token) {
+CL_PRIVATE_FUNCTION bool CL_LexMacro(CL_Lexer *T, CL_Token *token) {
     while (*T->stream == ' ' || T->stream[0] == '\t') CL_Advance(T);
     token->str = T->stream;
     while (CL_IsAlphabetic(*T->stream)) CL_Advance(T);
@@ -697,7 +699,7 @@ CL_API_FUNCTION bool CL_LexMacro(CL_Lexer *T, CL_Token *token) {
 
 // Skipped space here is for case #define Memes (a), this is not a function like macro because of space
 static uint32_t CL_TokenID; // @todo: make it stable, thread local?
-CL_API_FUNCTION void CL_PrepareToken(CL_Lexer *T, CL_Token *token, bool skipped_space) {
+CL_PRIVATE_FUNCTION void CL_PrepareToken(CL_Lexer *T, CL_Token *token, bool skipped_space) {
     CL_MemoryZero(token, sizeof(*token));
     token->str = T->stream;
     token->line = T->line;
@@ -708,7 +710,7 @@ CL_API_FUNCTION void CL_PrepareToken(CL_Lexer *T, CL_Token *token, bool skipped_
     CL_Advance(T);
 }
 
-CL_API_FUNCTION void CL_DefaultTokenize(CL_Lexer *T, CL_Token *token) {
+CL_PRIVATE_FUNCTION void CL_DefaultTokenize(CL_Lexer *T, CL_Token *token) {
     char *c = token->str;
     switch (*c) {
         case 0: break;
@@ -1133,7 +1135,7 @@ CL_API_FUNCTION void CL_DefaultTokenize(CL_Lexer *T, CL_Token *token) {
 error_end_path:;
 }
 
-CL_API_FUNCTION bool CL_EatWhitespace(CL_Lexer *T) {
+CL_PRIVATE_FUNCTION bool CL_EatWhitespace(CL_Lexer *T) {
     bool skipped = false;
     for (;;) {
         if (CL_IsWhitespace(*T->stream)) {
@@ -1159,7 +1161,7 @@ CL_API_FUNCTION bool CL_EatWhitespace(CL_Lexer *T) {
     return skipped;
 }
 
-CL_API_FUNCTION void CL_TryToFinalizeToken(CL_Lexer *T, CL_Token *token) {
+CL_PRIVATE_FUNCTION void CL_TryToFinalizeToken(CL_Lexer *T, CL_Token *token) {
     if (!token->len) {
         CL_SetTokenLength(T, token);
     }
@@ -1168,7 +1170,7 @@ CL_API_FUNCTION void CL_TryToFinalizeToken(CL_Lexer *T, CL_Token *token) {
     }
 }
 
-CL_API_FUNCTION void CL_InitNextToken(CL_Lexer *T, CL_Token *token) {
+CL_PRIVATE_FUNCTION void CL_InitNextToken(CL_Lexer *T, CL_Token *token) {
     // Skip comments, comments get allocated on perm and gathered on the Tokenizer.
     // First non comment token gets those comments attached.
     for (;;) {
@@ -1206,7 +1208,8 @@ CL_API_FUNCTION void CL_InitNextToken(CL_Lexer *T, CL_Token *token) {
 }
 
 CL_API_FUNCTION CL_Token CL_Next(CL_Lexer *T) {
-    CL_Token result = {0};
+    CL_Token result;
+    CL_MemoryZero(&result, sizeof(CL_Token));
     CL_InitNextToken(T, &result);
     return result;
 }
@@ -1337,7 +1340,7 @@ CL_API_FUNCTION char *CL_ResolveFilepath(CL_Allocator arena, CL_SearchPaths *sea
 //
 
 const char *CL_FixString[] = {
-    "",
+    "SUFFIX_INVALID",
     "SUFFIX_U",
     "SUFFIX_UL",
     "SUFFIX_ULL",

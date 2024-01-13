@@ -241,20 +241,11 @@ struct CL_SearchPaths {
 CL_API_FUNCTION CL_Token CL_Next(CL_Lexer *T);
 CL_API_FUNCTION CL_Lexer CL_Begin(CL_Allocator arena, char *stream, char *filename);
 CL_API_FUNCTION char *CL_ResolveFilepath(CL_Allocator arena, CL_SearchPaths *search_paths, char *filename, char *parent_file, bool is_system_include);
-
 CL_API_FUNCTION void CL_StringifyMessage(char *buff, int buff_size, CL_Message *msg);
 CL_API_FUNCTION void CL_Stringify(char *buff, int buff_size, CL_Token *token);
-CL_API_FUNCTION void CL_SetTokenLength(CL_Lexer *T, CL_Token *token);
-CL_API_FUNCTION void CL_ParseCharLiteral(CL_Lexer *T, CL_Token *token);
-CL_API_FUNCTION void CL_ParseString(CL_Lexer *T, CL_Token *token);
-CL_API_FUNCTION void CL_IsIdentifierKeyword(CL_Token *token);
-CL_API_FUNCTION void CL_LexMacroInclude(CL_Lexer *T, CL_Token *token);
-CL_API_FUNCTION bool CL_LexMacro(CL_Lexer *T, CL_Token *token);
-CL_API_FUNCTION void CL_PrepareToken(CL_Lexer *T, CL_Token *token, bool skipped_space);
-CL_API_FUNCTION void CL_DefaultTokenize(CL_Lexer *T, CL_Token *token);
-CL_API_FUNCTION bool CL_EatWhitespace(CL_Lexer *T);
-CL_API_FUNCTION void CL_TryToFinalizeToken(CL_Lexer *T, CL_Token *token);
-CL_API_FUNCTION void CL_InitNextToken(CL_Lexer *T, CL_Token *token);
+
+extern const char *CL_FixString[];
+extern const char *CL_KindString[];
 
 CL_INLINE int CL_StringLength(char *string) {
     int len = 0;
