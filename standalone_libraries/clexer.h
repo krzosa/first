@@ -3,14 +3,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#ifndef CL_PRIVATE_FUNCTION
-    #if defined(__GNUC__) || defined(__clang__)
-        #define CL_PRIVATE_FUNCTION __attribute__((unused)) static
-    #else
-        #define CL_PRIVATE_FUNCTION static
-    #endif
-#endif
-
 #ifndef CL_API_FUNCTION
     #ifdef __cplusplus
         #define CL_API_FUNCTION extern "C"
@@ -31,18 +23,9 @@
     #endif
 #endif
 
-#ifndef CL_Arena
-    #define CL_Arena CL__Arena
-typedef struct CL__Arena {
-    char *buff;
-    int len, cap;
-} CL_Arena;
-CL_PRIVATE_FUNCTION void *CL_PushSize(CL_Arena *arena, int size);
-#else
-    #define CL_CUSTOM_ARENA_TYPE
-    #ifndef CL_PushSize
-        #error If you use a custom Arena type, you need to implement CL_PushSize macro
-    #endif
+#ifndef CL_Allocator
+struct MA_Arena;
+    #define CL_Allocator MA_Arena *
 #endif
 
 #ifndef AND_CL_STRING_TERMINATE_ON_NEW_LINE
@@ -185,118 +168,44 @@ typedef enum CL_Fix {
     CL_PREFIX_L,
 } CL_Fix;
 
-typedef uint16_t CL_Flag;
-enum {
-    CL_NONE,
-    CL_HEX = 1,
-    CL_DIGRAPH = 2,
-    CL_INSIDE_OF_MACRO = 4,
-    CL_SYSTEM_INCLUDE = 8,
-    CL_WHITESPACE_BEFORE_TOKEN = 16,
-};
-
-typedef struct CL_Hideset CL_Hideset;
-struct CL_Hideset {
-    CL_Hideset *next;
-    char *name;
-};
-
-typedef struct CL_Token CL_Token; // 64 bytes
+typedef struct CL_Token CL_Token;
 struct CL_Token {
-    // 16 bytes :( we want debug info etc.
     CL_Kind kind;
-    CL_Flag flags;
     CL_Fix fix;
 
-    // 8bytes
+    bool is_hex : 1;
+    bool is_inside_macro : 1;
+    bool is_system_include : 1;
+    bool is_there_whitespace_before_token : 1;
+
     uint32_t id;
     int len;
-    char *str; // 8bytes
+    char *str;
 
-    // We dont store line_begin like I would normally cause the user could
+    // Not storing line_begin like I would normally cause the user could
     // override the line and file information using directives.
     // On error need to do search if I want nice error context.
-    int line, column;    // 8bytes
-    char *file;          // 8bytes
-    CL_Hideset *hideset; // 8bytes
+    int line, column;
+    char *file;
 
-    union { // 8bytes
+    union {
         double f64;
         uint64_t u64;
         char *intern;
         char *string_literal;
         struct CL_Message *error;
-        CL_Token *comment_is_attached_to_token;
     };
 };
-
-typedef enum CL_MessageKind {
-    CLM_ERROR,
-    CLM_WARNING,
-    CLM_TRACE,
-} CL_MessageKind;
 
 typedef struct CL_Message CL_Message;
 struct CL_Message {
     CL_Message *next;
-    CL_MessageKind kind;
     char *string;
     CL_Token token;
 };
 
-typedef struct CL_Tokens CL_Tokens;
-struct CL_Tokens {
-    CL_Token *data;
-    int count;
-};
-
-typedef char CL_Intern;
-typedef struct CL_InternEntry CL_InternEntry;
-struct CL_InternEntry {
-    CL_InternEntry *next;
-    char *string;
-    int len;
-    uint64_t hash;
-};
-
-typedef struct CL_InternTable CL_InternTable;
-struct CL_InternTable {
-    CL_InternEntry *entries;
-    int entry_count;
-    int occupied_entry_count;
-    CL_Arena *arena;
-};
-
-typedef struct CL_ArenaTuple CL_ArenaTuple;
-struct CL_ArenaTuple {
-
-    // @todo: Add TokenList and TokenNode, get rid of 1 arena ?
-    CL_Arena *token;
-    CL_Arena *other;
-    union {
-        CL_Arena *include;
-        CL_Arena *macro_token;
-    };
-    union {
-        CL_Arena *comment;
-        CL_Arena *scratch2;
-    };
-
-    CL_Arena default_comment;
-    CL_Arena default_token;
-    CL_Arena default_include;
-    CL_Arena default_other;
-};
-
-typedef struct CL_LexResult CL_LexResult;
-struct CL_LexResult {
-    CL_LexResult *next_result;
-
-    CL_Tokens tokens;
-    CL_Tokens includes;
-    CL_Tokens comments;
-    int attached_comment_index;
-
+typedef struct CL_Lexer CL_Lexer;
+struct CL_Lexer {
     CL_Message *first_message;
     CL_Message *last_message;
     int errors;
@@ -308,7 +217,14 @@ struct CL_LexResult {
     char *file;
     bool inside_of_macro;
 
-    CL_ArenaTuple *arena;
+    // filters
+    bool skip_comments : 1;
+    bool skip_macros : 1;
+    bool select_includes : 1;
+    bool select_comments : 1;
+    bool select_macros : 1;
+
+    CL_Allocator arena;
 };
 
 typedef struct CL_SearchPaths CL_SearchPaths;
@@ -322,88 +238,24 @@ struct CL_SearchPaths {
     char *file_begin_to_ignore;
 };
 
-typedef struct CL_LexList CL_LexList;
-struct CL_LexList {
-    int count;
-    CL_LexResult *first_result;
-    CL_LexResult *last_result;
-    CL_InternTable *intern_table;
-    CL_SearchPaths search_paths;
-};
+CL_API_FUNCTION CL_Token CL_Next(CL_Lexer *T);
+CL_API_FUNCTION CL_Lexer CL_Begin(CL_Allocator arena, char *stream, char *filename);
+CL_API_FUNCTION char *CL_ResolveFilepath(CL_Allocator arena, CL_SearchPaths *search_paths, char *filename, char *parent_file, bool is_system_include);
 
-typedef struct CL_IncludeIter CL_IncludeIter;
-struct CL_IncludeIter {
-    char *filename;
-    bool is_system_include;
-    bool inited_with_filename;
-
-    CL_Token *include_token;
-
-    int include_index;
-    CL_LexResult *parent;
-    CL_LexList *lex_list;
-
-    CL_Arena *arena;
-    CL_SearchPaths search_paths;
-    bool resolve;
-};
-
-//
-// Main API
-//
-CL_API_FUNCTION void CL_InitDefaultTuple(CL_ArenaTuple *tuple);
-CL_API_FUNCTION CL_LexResult *CL_LexString(CL_ArenaTuple *arena, char *filename, char *string);
-CL_API_FUNCTION CL_LexResult *CL_LexFile(CL_ArenaTuple *arena, char *filename);
-CL_API_FUNCTION CL_LexList CL_LexRecursive(CL_ArenaTuple *arena, char *filename, CL_SearchPaths paths);
-
-//
-// Intern table
-//
-CL_API_FUNCTION void CL_InitInternTable(CL_Arena *arena, CL_InternTable *table, int size);
-CL_API_FUNCTION CL_InternTable *CL_CreateInternTable(CL_Arena *arena, int size);
-CL_API_FUNCTION CL_Intern *CL_InsertIntern(CL_InternTable *table, char *string, int len);
-CL_API_FUNCTION void CL_InternResult(CL_InternTable *table, CL_LexResult *result);
-
-//
-// Include iteration and path resolution
-//
-CL_API_FUNCTION CL_IncludeIter CL_IterateIncludes(CL_LexList *list);
-CL_API_FUNCTION CL_IncludeIter CL_IterateResolvedIncludes(CL_Arena *arena, CL_LexList *list, CL_SearchPaths search_paths);
-CL_API_FUNCTION char *CL_ResolveFilepath(CL_Arena *arena, CL_SearchPaths *search_paths, char *filename, char *parent_file, bool is_system_include);
-CL_API_FUNCTION bool CL_IsValidFile(CL_LexList *list, char *filename);
-CL_API_FUNCTION void CL_GetNextInclude(CL_IncludeIter *iter);
-
-// Token serialization
 CL_API_FUNCTION void CL_StringifyMessage(char *buff, int buff_size, CL_Message *msg);
-CL_API_FUNCTION void CL_PrintMessages(CL_LexResult *lex_result);
 CL_API_FUNCTION void CL_Stringify(char *buff, int buff_size, CL_Token *token);
-CL_API_FUNCTION void CL_PrintTokens(CL_Tokens tokens);
-//
-// Extended API for "manual" lexing with extended help
-//
-CL_API_FUNCTION void CL_ReportError(CL_LexResult *T, CL_Token *token, const char *string, ...);
-CL_API_FUNCTION bool CL_EatWhitespace(CL_LexResult *T);
-CL_API_FUNCTION void CL_SetTokenLength(CL_LexResult *T, CL_Token *token);
-CL_API_FUNCTION void CL_TryToFinalizeToken(CL_LexResult *T, CL_Token *token);
-CL_API_FUNCTION void CL_ParseCharLiteral(CL_LexResult *T, CL_Token *token);
-CL_API_FUNCTION void CL_ParseString(CL_LexResult *T, CL_Token *token);
-CL_API_FUNCTION void CL_IsIdentifierKeyword(CL_LexResult *ctx, CL_Token *token);
-CL_API_FUNCTION void CL_LexMacroInclude(CL_LexResult *T, CL_Token *token);
-CL_API_FUNCTION bool CL_LexMacro(CL_LexResult *T, CL_Token *token);
-CL_API_FUNCTION CL_LexResult *CL_CreateLexingResult(CL_ArenaTuple *arena, char *filename, char *filecontent);
-CL_API_FUNCTION void CL_PrepareToken(CL_LexResult *T, CL_Token *token, bool skipped_whitespace);
-CL_API_FUNCTION void CL_DefaultTokenize(CL_LexResult *T, CL_Token *token);
-CL_API_FUNCTION bool CL_IsComment(CL_Kind kind);
-CL_API_FUNCTION void CL_InitNextToken(CL_LexResult *T, CL_Token *token);
-CL_API_FUNCTION CL_Hideset *CL_CreateHideset(CL_Arena *arena, char *name);
-CL_API_FUNCTION CL_Token *CL_AddNextToken(CL_LexResult *T);
-CL_API_FUNCTION void CL_AddToken(CL_LexResult *T, CL_Token *token);
-CL_API_FUNCTION CL_LexList CL_MakeLexList(CL_LexResult *l);
-CL_API_FUNCTION CL_IncludeIter CL_IterateFileAndResolvedIncludes(CL_ArenaTuple *arena, char *filename, CL_SearchPaths search_paths);
+CL_API_FUNCTION void CL_SetTokenLength(CL_Lexer *T, CL_Token *token);
+CL_API_FUNCTION void CL_ParseCharLiteral(CL_Lexer *T, CL_Token *token);
+CL_API_FUNCTION void CL_ParseString(CL_Lexer *T, CL_Token *token);
+CL_API_FUNCTION void CL_IsIdentifierKeyword(CL_Token *token);
+CL_API_FUNCTION void CL_LexMacroInclude(CL_Lexer *T, CL_Token *token);
+CL_API_FUNCTION bool CL_LexMacro(CL_Lexer *T, CL_Token *token);
+CL_API_FUNCTION void CL_PrepareToken(CL_Lexer *T, CL_Token *token, bool skipped_space);
+CL_API_FUNCTION void CL_DefaultTokenize(CL_Lexer *T, CL_Token *token);
+CL_API_FUNCTION bool CL_EatWhitespace(CL_Lexer *T);
+CL_API_FUNCTION void CL_TryToFinalizeToken(CL_Lexer *T, CL_Token *token);
+CL_API_FUNCTION void CL_InitNextToken(CL_Lexer *T, CL_Token *token);
 
-//
-// Token iteration and utilities
-//
 CL_INLINE int CL_StringLength(char *string) {
     int len = 0;
     while (*string++ != 0) len++;
@@ -440,56 +292,16 @@ CL_INLINE bool CL_IsKeywordTypeOrSpec(CL_Kind op) {
 }
 
 CL_INLINE bool CL_IsMacro(CL_Kind kind) {
-    /*print(f"bool result = kind >= CL_PREPROC_{meta.preproc_keywords[0].upper()} && kind <= CL_PREPROC_{meta.preproc_keywords[-1].upper()};")*/
     bool result = kind >= CL_PREPROC_DEFINE && kind <= CL_PREPROC_UNDEF;
-    /*END*/
     return result;
 }
 
 CL_INLINE bool CL_IsKeyword(CL_Kind kind) {
-    /*#print(f"bool result = kind >= CL_KEYWORD_{meta.keywords[0].upper()} && kind <= CL_KEYWORD_{meta.keywords[-1].upper()};")*/
     bool result = kind >= CL_KEYWORD_VOID && kind <= CL_KEYWORD__GENERIC;
-    /*END*/
     return result;
 }
 
 CL_INLINE bool CL_IsKeywordOrIdent(CL_Kind kind) {
     bool result = CL_IsKeyword(kind) || kind == CL_IDENTIFIER;
     return result;
-}
-
-CL_Token CL_NullToken;
-CL_INLINE CL_Token *CL_Next(CL_Tokens *tokens) {
-    if (tokens->count > 0) {
-        CL_Token *result = tokens->data;
-        tokens->data += 1;
-        tokens->count -= 1;
-        return result;
-    }
-    return &CL_NullToken;
-}
-
-CL_INLINE CL_Token *CL_Get(CL_Tokens *tokens) {
-    if (tokens->count > 0) {
-        return tokens->data;
-    }
-    return &CL_NullToken;
-}
-
-CL_INLINE CL_Token *CL_Match(CL_Tokens *tokens, CL_Kind kind) {
-    CL_Token *result = CL_Get(tokens);
-    if (result->kind == kind) {
-        CL_Token *next = CL_Next(tokens);
-        return next;
-    }
-    return 0;
-}
-
-CL_INLINE CL_Token *CL_MatchIdentifier(CL_Tokens *tokens, char *str) {
-    CL_Token *result = CL_Get(tokens);
-    if (CL_IsIdentifier(result, str)) {
-        CL_Token *next = CL_Next(tokens);
-        return next;
-    }
-    return 0;
 }

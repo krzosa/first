@@ -16,13 +16,11 @@ struct SRC_Cache {
 double SRC_Time;
 SRC_Cache *SRC_InMemoryCache;
 SRC_Cache *SRC_FromFileCache;
-CL_ArenaTuple SRC_ArenaTuple;
 S8_String SRC_CacheFilename;
 CL_SearchPaths SRC_SearchPaths = {}; // @todo;
 
 void SRC_InitCache(MA_Arena *arena, S8_String cachefilename) {
     SRC_CacheFilename = cachefilename;
-    CL_InitDefaultTuple(&SRC_ArenaTuple);
 
     SRC_InMemoryCache = MA_PushStruct(arena, SRC_Cache);
     SRC_InMemoryCache->entry_cap = SRC_CACHE_ENTRY_COUNT;
@@ -70,16 +68,19 @@ SRC_CacheEntry *SRC_HashFile(S8_String file, char *parent_file) {
     SRC_CacheEntry *entry = SRC_FindCache(SRC_InMemoryCache, filepath_hash);
     if (entry) return entry;
 
-    CL_LexResult *first_lex = CL_LexFile(&SRC_ArenaTuple, resolved_file);
-    IO_Assert(first_lex);
-    uint64_t file_hash = HashBytes(first_lex->stream_begin, first_lex->stream - first_lex->stream_begin);
+    S8_String filecontent = OS_ReadFile(Perm, S8_MakeFromChar(resolved_file));
+    IO_Assert(filecontent.str);
+
+    uint64_t file_hash = HashBytes(filecontent.str, filecontent.len);
     uint64_t includes_hash = 13;
 
-    CL_LexList list = CL_MakeLexList(first_lex);
-    for (CL_IncludeIter iter = CL_IterateIncludes(&list); iter.filename; CL_GetNextInclude(&iter)) {
-        if (iter.is_system_include) continue;
+    CL_Lexer lexer = CL_Begin(Perm, filecontent.str, resolved_file);
+    lexer.select_includes = true;
 
-        S8_String file_it = S8_MakeFromChar(iter.filename);
+    for (CL_Token token = CL_Next(&lexer); token.kind != CL_EOF; token = CL_Next(&lexer)) {
+        if (token.is_system_include) continue;
+
+        S8_String file_it = S8_Make(token.str, token.len);
         SRC_CacheEntry *cache = SRC_HashFile(file_it, resolved_file);
         if (!cache) {
             IO_Printf("Missing cache for: %.*s\n", S8_Expand(file_it));

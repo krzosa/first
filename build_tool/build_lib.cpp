@@ -35,8 +35,8 @@ DEBUG = -fsanitize=address
 
 #include "../core_library/core.c"
 
-#define CL_Arena MA_Arena
-#define CL_PushSize MA_PushSizeNonZeroed
+#define CL_Allocator MA_Arena *
+#define CL_Allocate(a, s) MA_PushSizeNonZeroed(a, s)
 #define CL_ASSERT IO_Assert
 #define CL_VSNPRINTF stbsp_vsnprintf
 #define CL_SNPRINTF stbsp_snprintf
