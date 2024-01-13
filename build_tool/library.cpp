@@ -47,7 +47,7 @@ MA_Arena PernamentArena;
 MA_Arena *Perm = &PernamentArena;
 Table<S8_String> CMDLine;
 
-#include "cache.c"
+#include "cache.cpp"
 
 //
 //

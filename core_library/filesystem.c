@@ -495,10 +495,11 @@ OS_API void OS_Advance(OS_FileIter *it) {
         it->is_directory = file->d_type == DT_DIR;
         it->filename = S8_CopyChar(it->arena, file->d_name);
 
-        const char *is_dir = it->is_directory ? "/" : "";
+        const char *dir_char_ending = it->is_directory ? "/" : "";
         const char *separator = it->path.str[it->path.len - 1] == '/' ? "" : "/";
-        it->relative_path = S8_Format(it->arena, "%.*s%s%s%s", S8_Expand(it->path), separator, file->d_name, is_dir);
+        it->relative_path = S8_Format(it->arena, "%.*s%s%s%s", S8_Expand(it->path), separator, file->d_name, dir_char_ending);
         it->absolute_path = OS_GetAbsolutePath(it->arena, it->relative_path);
+        if (it->is_directory) it->absolute_path = S8_Format(it->arena, "%.*s/", S8_Expand(it->absolute_path));
         it->is_valid = true;
         return;
     }

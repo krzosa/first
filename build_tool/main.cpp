@@ -1,5 +1,5 @@
 #define BUILD_MAIN
-#include "build_lib.cpp"
+#include "library.cpp"
 
 int main(int argument_count, char **arguments) {
     OS_MakeDir(S8_Lit("build"));

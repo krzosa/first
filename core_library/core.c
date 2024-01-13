@@ -3,12 +3,8 @@
    leeway for big buffers and other such things. Just make sure to not relay on it because it's easier unless specified.
 - Not sure if we should assume that strings should use allocators or arenas, for now it's arenas because I don't have other use cases
 @todo
-- Maybe create a nice C++ binding for strings,
+- Add proper string arrays and utilities for build files
     - also add String Arrays and String Builder, temp allocators hook ins for nicer api
-    - Iterating over unicode codepoints using For
-- Redesign clexer because the Arena Tuple is hella weird
-    - Maybe remove token array stuff, do standard stream thing, then you need one arena ...
-        - Add filter stuff so we can get includes / comments / normal tokens etc.
 */
 
 #include "core.h"

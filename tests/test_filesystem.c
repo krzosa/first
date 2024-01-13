@@ -78,7 +78,7 @@ int main() {
     {
         for (OS_FileIter it = OS_IterateFiles(&arena, S8_Lit("..")); OS_IsValid(it); OS_Advance(&it)) {
             if (it.is_directory) {
-                IO_Assert(it.absolute_path.str[it.absolute_path.len - 1] == '/');
+                IO_Assertf(it.absolute_path.str[it.absolute_path.len - 1] == '/', "%.*s", S8_Expand(it.absolute_path));
             }
             IO_Assert(!S8_Seek(it.absolute_path, S8_Lit(".."), 0, 0));
             IO_Assert(S8_Seek(it.relative_path, S8_Lit(".."), 0, 0));

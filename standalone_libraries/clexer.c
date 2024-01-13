@@ -60,6 +60,13 @@ CL_PRIVATE_FUNCTION bool CL_FileExists(char *name) {
 
 CL_PRIVATE_FUNCTION void CL_ReportError(CL_Lexer *T, CL_Token *token, const char *string, ...);
 
+CL_PRIVATE_FUNCTION char *CL_PushStringCopy(CL_Allocator arena, char *p, int size) {
+    char *copy_buffer = (char *)CL_Allocate(arena, size + 1);
+    CL__MemoryCopy(copy_buffer, p, size);
+    copy_buffer[size] = 0;
+    return copy_buffer;
+}
+
 CL_INLINE void CL_Advance(CL_Lexer *T) {
     if (*T->stream == '\n') {
         T->line += 1;
@@ -273,6 +280,8 @@ skip_utf_encode:
 // It combines strings, verifies the escape sequences but doesn't do any allocations
 // so the final string actually needs additional transformation pass. A pass
 // that will combine the string snippets, replace escape sequences with actual values etc.
+//
+// @warning: @not_sure: we are not setting token->string_literal
 //
 // "String 1"  "String 2" - those strings snippets are combined
 // @todo: look at this again
@@ -635,6 +644,9 @@ CL_PRIVATE_FUNCTION void CL_LexMacroInclude(CL_Lexer *T, CL_Token *token) {
     }
     CL_SetTokenLength(T, token);
     CL_Advance(T);
+
+    // @not_sure: this is because we want null terminated input into path resolution stuff
+    token->string_literal = CL_PushStringCopy(T->arena, token->str, token->len);
 }
 
 CL_PRIVATE_FUNCTION bool CL_LexMacro(CL_Lexer *T, CL_Token *token) {
@@ -1226,13 +1238,6 @@ CL_API_FUNCTION CL_Lexer CL_Begin(CL_Allocator arena, char *stream, char *filena
 //
 //
 //
-
-CL_PRIVATE_FUNCTION char *CL_PushStringCopy(CL_Allocator arena, char *p, int size) {
-    char *copy_buffer = (char *)CL_Allocate(arena, size + 1);
-    CL__MemoryCopy(copy_buffer, p, size);
-    copy_buffer[size] = 0;
-    return copy_buffer;
-}
 
 CL_PRIVATE_FUNCTION char *CL_ChopLastSlash(CL_Allocator arena, char *str) {
     int i = 0;

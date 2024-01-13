@@ -80,10 +80,10 @@ SRC_CacheEntry *SRC_HashFile(S8_String file, char *parent_file) {
     for (CL_Token token = CL_Next(&lexer); token.kind != CL_EOF; token = CL_Next(&lexer)) {
         if (token.is_system_include) continue;
 
-        S8_String file_it = S8_Make(token.str, token.len);
+        S8_String file_it = S8_MakeFromChar(token.string_literal);
         SRC_CacheEntry *cache = SRC_HashFile(file_it, resolved_file);
         if (!cache) {
-            IO_Printf("Missing cache for: %.*s\n", S8_Expand(file_it));
+            // error was reported already IO_Printf("Missing cache for: %.*s\n", S8_Expand(file_it));
             continue;
         }
 
