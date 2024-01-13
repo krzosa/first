@@ -32,19 +32,6 @@ struct S8_String {
     int64_t len;
 };
 
-// #ifdef __cplusplus
-// struct String : S8_String {
-//     String() = default;
-//     String(char *s) : S8_String{s, S8_Length(s)} {}
-//     String(char *s, int64_t l) : S8_String{s, l} {}
-//     String(const char *s) : S8_String{(char *)s, S8_Length((char *)s)} {}
-//     String(const char *s, int64_t l) : S8_String{(char *)s, l} {}
-//     String(S8_String s) : S8_String{s.str, s.len} {}
-
-//     // @todo add unicode iterator
-// };
-// #endif
-
 struct S8_Node {
     S8_Node *next;
     S8_String string;

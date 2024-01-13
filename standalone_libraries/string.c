@@ -111,6 +111,15 @@ S8_API S8_String S8_Copy(S8_Allocator allocator, S8_String string) {
     return result;
 }
 
+S8_API S8_String S8_CopyChar(S8_Allocator allocator, char *s) {
+    int64_t len = S8_Length(s);
+    char *copy = (char *)S8_ALLOCATE(allocator, sizeof(char) * (len + 1));
+    S8_MemoryCopy(copy, s, len);
+    copy[len] = 0;
+    S8_String result = S8_Make(copy, len);
+    return result;
+}
+
 S8_API void S8_NormalizePath(S8_String s) {
     for (int64_t i = 0; i < s.len; i++) {
         if (s.str[i] == '\\')
@@ -169,7 +178,7 @@ S8_API S8_String S8_GetPrefix(S8_String string, int64_t len) {
     return result;
 }
 
-S8_API S8_String S8_GetNameNoExtension(S8_String s) {
+S8_API S8_String S8_GetNameNoExt(S8_String s) {
     return S8_SkipToLastSlash(S8_ChopLastPeriod(s));
 }
 

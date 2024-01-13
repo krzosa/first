@@ -202,8 +202,9 @@ int Run(Strs s) {
 
 Strs ListDir(char *dir) {
     Strs result = {};
-    S8_List files = OS_ListDir(Perm, S8_MakeFromChar(dir), 0);
-    S8_For(it, files) result.add(it->string);
+    for (OS_FileIter it = OS_IterateFiles(Perm, S8_MakeFromChar(dir)); OS_IsValid(it); OS_Advance(&it)) {
+        result.add(S8_Copy(Perm, it.absolute_path));
+    }
     return result;
 }
 

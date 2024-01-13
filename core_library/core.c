@@ -1,10 +1,8 @@
 /*
+- I think it's okay to say that strings being null terminated should be mostly treated as NOT terminated but leave some
+   leeway for big buffers and other such things. Just make sure to not relay on it because it's easier unless specified.
+- Not sure if we should assume that strings should use allocators or arenas, for now it's arenas because I don't have other use cases
 @todo
-- Rewrite OS_ListDir, no weird flags and conventions, [relative, absolute, is_dir]
-- add c++ default args using macros
-- Rework string flags
-- String should use allocator instead of arena?
-- Maybe remove completely null termination from S8_String, I think it might complicate and is error prone because one can sometimes assume it's null terminated and it isn't
 - Maybe create a nice C++ binding for strings,
     - also add String Arrays and String Builder, temp allocators hook ins for nicer api
     - Iterating over unicode codepoints using For

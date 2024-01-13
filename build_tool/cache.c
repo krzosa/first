@@ -62,7 +62,7 @@ SRC_CacheEntry *SRC_FindCache(SRC_Cache *cache, uint64_t filepath_hash) {
 SRC_CacheEntry *SRC_HashFile(S8_String file, char *parent_file) {
     char *resolved_file = CL_ResolveFilepath(Perm, &SRC_SearchPaths, file.str, parent_file, false);
     if (!resolved_file) {
-        IO_Printf("Failed to resolve file: %s\n", file.str);
+        IO_Printf("Failed to resolve file: %.*s\n", S8_Expand(file));
         return 0;
     }
 
@@ -82,7 +82,7 @@ SRC_CacheEntry *SRC_HashFile(S8_String file, char *parent_file) {
         S8_String file_it = S8_MakeFromChar(iter.filename);
         SRC_CacheEntry *cache = SRC_HashFile(file_it, resolved_file);
         if (!cache) {
-            IO_Printf("Missing cache for: %s\n", file_it.str);
+            IO_Printf("Missing cache for: %.*s\n", S8_Expand(file_it));
             continue;
         }
 

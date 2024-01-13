@@ -26,10 +26,9 @@ int main(int argument_count, char **arguments) {
     // Search for build file in the project directory
     S8_String build_file = {0};
     {
-        S8_List files_current_dir = OS_ListDir(Perm, S8_Lit(".."), 0);
-        for (S8_Node *it = files_current_dir.first; it; it = it->next) {
-            if (S8_Find(it->string, S8_Lit("build_file.c"), S8_IgnoreCase)) {
-                build_file = it->string;
+        for (OS_FileIter it = OS_IterateFiles(Perm, S8_Lit("..")); OS_IsValid(it); OS_Advance(&it)) {
+            if (S8_Find(it.filename, S8_Lit("build_file.c"), S8_IgnoreCase)) {
+                build_file = it.absolute_path;
             }
         }
 
@@ -39,9 +38,8 @@ int main(int argument_count, char **arguments) {
         }
     }
 
-    S8_String a = S8_ChopLastPeriod(build_file);
-    S8_String b = S8_SkipToLastSlash(a);
-    S8_String exe_name = S8_Format(Perm, "%.*s.exe", S8_Expand(b));
+    S8_String name_no_ext = S8_GetNameNoExt(build_file);
+    S8_String exe_name = S8_Format(Perm, "%.*s.exe", S8_Expand(name_no_ext));
 
     // Compile the build file only if code changed
     if (SRC_WasModified(build_file, exe_name)) {

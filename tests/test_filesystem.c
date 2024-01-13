@@ -74,28 +74,4 @@ int main() {
         IO_Assert(S8_Find(abs_path, S8_Lit("/tests/data"), 0, 0));
         IO_Assert(!S8_Find(abs_path, S8_Lit("../"), 0, 0));
     }
-
-    // List dir test
-    {
-        S8_List list = OS_ListDir(&arena, S8_Lit("../tests"), 0);
-        IO_Assert(list.node_count > 4);
-        int dir_count = 0;
-        S8_For(it, list) {
-            if (OS_IsDir(it->string)) {
-                IO_Assert(it->string.str[it->string.len - 1] == '/');
-                dir_count += 1;
-            }
-            IO_Assert(S8_Find(it->string, S8_Lit("/tests"), 0, 0));
-            IO_Assert(!S8_Find(it->string, S8_Lit("../tests"), 0, 0));
-        }
-        IO_Assert(dir_count > 0);
-
-        // relative
-        {
-            S8_List list = OS_ListDir(&arena, S8_Lit("../tests"), OS_RELATIVE_PATHS);
-            S8_For(it, list) {
-                IO_Assert(S8_Find(it->string, S8_Lit("../tests"), 0, 0));
-            }
-        }
-    }
 }

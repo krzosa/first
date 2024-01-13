@@ -126,69 +126,72 @@ OS_API double OS_GetTime(void) {
     return result;
 }
 
-// @todo: I think we want a list with both relative + absolute + other things
-//
-// Returns directories with slash at the end '/'
-// By default returns absolute paths
-OS_API S8_List OS_ListDir(MA_Arena *arena, S8_String path, unsigned flags) {
-    MA_Checkpoint scratch = MA_GetScratch1(arena);
-    S8_List dirs_to_read = S8_MakeEmptyList();
-    S8_List result = S8_MakeEmptyList();
-    S8_AddNode(scratch.arena, &dirs_to_read, path);
+/*
+User needs to copy particular filename to keep it.
 
-    for (S8_Node *it = dirs_to_read.first; it; it = it->next) {
-        wchar_t wbuff[1024];
-        S8_String modified_path = S8_Format(scratch.arena, "%.*s\\*", (int)it->string.len, it->string.str);
-        IO_Assert(modified_path.len < MA_LENGTHOF(wbuff));
-        int64_t wsize = UTF_CreateWidecharFromChar(wbuff, MA_LENGTHOF(wbuff), modified_path.str, modified_path.len);
-        IO_Assert(wsize);
+for (OS_FileIter it = OS_IterateFiles(it); OS_IsValid(iter); OS_Advance(it)) {
+}
 
-        WIN32_FIND_DATAW ffd;
-        HANDLE handle = FindFirstFileW(wbuff, &ffd);
-        if (handle == INVALID_HANDLE_VALUE)
-            continue;
+*/
 
-        do {
+typedef struct OS_Win32_FileIter {
+    HANDLE handle;
+    WIN32_FIND_DATAW data;
+} OS_Win32_FileIter;
 
-            //
-            // Skip '.' and '..'
-            //
-            if (ffd.cFileName[0] == '.') {
-                if (ffd.cFileName[1] == '.') {
-                    if (ffd.cFileName[2] == 0)
-                        continue;
-                }
+OS_API bool OS_IsValid(OS_FileIter it) {
+    return it.is_valid;
+}
 
-                if (ffd.cFileName[1] == 0)
-                    continue;
-            }
+OS_API void OS_Advance(OS_FileIter *it) {
+    while (FindNextFileW(it->w32->handle, &it->w32->data) != 0) {
+        WIN32_FIND_DATAW *data = &it->w32->data;
 
-            bool dir = ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
-            S8_String filename = UTF_CreateStringFromWidechar(scratch.arena, ffd.cFileName, S8_WideLength(ffd.cFileName));
-            S8_String is_dir = dir ? S8_Lit("/") : S8_Lit("");
-            S8_String rel_abs_path = S8_Format(scratch.arena, "%.*s/%.*s%.*s", S8_Expand(it->string), S8_Expand(filename), S8_Expand(is_dir));
-            if (flags & OS_RELATIVE_PATHS) {
-                S8_Add(arena, &result, rel_abs_path);
-            }
-            else {
-                S8_String abs_path = OS_GetAbsolutePath(arena, rel_abs_path);
-                S8_Add(arena, &result, abs_path);
-            }
+        // Skip '.' and '..'
+        if (data->cFileName[0] == '.' && data->cFileName[1] == '.' && data->cFileName[2] == 0) continue;
+        if (data->cFileName[0] == '.' && data->cFileName[1] == 0) continue;
 
-            if (dir && flags & OS_RECURSIVE) {
-                S8_AddNode(scratch.arena, &dirs_to_read, rel_abs_path);
-            }
-        } while (FindNextFileW(handle, &ffd) != 0);
+        it->is_directory = data->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+        it->filename = UTF_CreateStringFromWidechar(it->arena, data->cFileName, S8_WideLength(data->cFileName));
+        char *is_dir = it->is_directory ? "/" : "";
+        char *separator = it->path.str[it->path.len - 1] == '/' ? "" : "/";
+        it->relative_path = S8_Format(it->arena, "%.*s%s%.*s%s", S8_Expand(it->path), separator, S8_Expand(it->filename), is_dir);
+        it->absolute_path = OS_GetAbsolutePath(it->arena, it->relative_path);
+        it->is_valid = true;
 
-        DWORD error = GetLastError();
-        if (error != ERROR_NO_MORE_FILES) {
-            // Not sure what to do here hmmm
+        if (it->is_directory) {
+            IO_Assert(it->relative_path.str[it->relative_path.len - 1] == '/');
+            IO_Assert(it->absolute_path.str[it->absolute_path.len - 1] == '/');
         }
-        FindClose(handle);
+        return;
     }
 
-    MA_ReleaseScratch(scratch);
-    return result;
+    it->is_valid = false;
+    DWORD error = GetLastError();
+    IO_Assert(error == ERROR_NO_MORE_FILES);
+    FindClose(it->w32->handle);
+}
+
+OS_API OS_FileIter OS_IterateFiles(MA_Arena *scratch_arena, S8_String path) {
+    OS_FileIter it = {0};
+    it.arena = scratch_arena;
+    it.path = path;
+
+    S8_String modified_path = S8_Format(it.arena, "%.*s\\*", S8_Expand(path));
+    wchar_t *wbuff = MA_PushArray(it.arena, wchar_t, modified_path.len + 1);
+    int64_t wsize = UTF_CreateWidecharFromChar(wbuff, modified_path.len + 1, modified_path.str, modified_path.len);
+    IO_Assert(wsize);
+
+    it.w32 = MA_PushStruct(it.arena, OS_Win32_FileIter);
+    it.w32->handle = FindFirstFileW(wbuff, &it.w32->data);
+    if (it.w32->handle == INVALID_HANDLE_VALUE) {
+        it.is_valid = false;
+        return it;
+    }
+
+    IO_Assert(it.w32->data.cFileName[0] == '.' && it.w32->data.cFileName[1] == 0);
+    OS_Advance(&it);
+    return it;
 }
 
 OS_API OS_Result OS_MakeDir(S8_String path) {
@@ -238,6 +241,9 @@ OS_API OS_Result OS_DeleteFile(S8_String path) {
 }
 
 OS_API OS_Result OS_DeleteDir(S8_String path, unsigned flags) {
+    IO_Todo();
+    return OS_FAILURE;
+    #if 0
     if (flags & OS_RECURSIVE) {
         MA_Checkpoint scratch = MA_GetScratch();
         S8_List list = OS_ListDir(scratch.arena, path, OS_RECURSIVE);
@@ -267,6 +273,7 @@ OS_API OS_Result OS_DeleteDir(S8_String path, unsigned flags) {
             result = OS_PATH_NOT_FOUND;
         return result;
     }
+    #endif
 }
 
 static OS_Result OS__WriteFile(S8_String path, S8_String data, bool append) {
@@ -475,41 +482,39 @@ OS_API double OS_GetTime(void) {
     return result;
 }
 
-OS_API S8_List OS_ListDir(MA_Arena *arena, S8_String path, unsigned flags) {
-    IO_Assert((flags & OS_RECURSIVE) == 0);
-    MA_Checkpoint scratch = MA_GetScratch1(arena);
-    path = S8_Copy(scratch.arena, path);
+OS_API bool OS_IsValid(OS_FileIter it) {
+    return it.is_valid;
+}
 
-    S8_List result = {0};
-    struct dirent *dir = 0;
-    DIR *d = opendir((char *)path.str);
-    if (d) {
-        while ((dir = readdir(d)) != NULL) {
-            if (dir->d_name[0] == '.') {
-                if (dir->d_name[1] == '.') {
-                    if (dir->d_name[2] == 0)
-                        continue;
-                }
+OS_API void OS_Advance(OS_FileIter *it) {
+    struct dirent *file = 0;
+    while ((file = readdir((DIR *)it->dir)) != NULL) {
+        if (file->d_name[0] == '.' && file->d_name[1] == '.' && file->d_name[2] == 0) continue;
+        if (file->d_name[0] == '.' && file->d_name[1] == 0) continue;
 
-                if (dir->d_name[1] == 0)
-                    continue;
-            }
+        it->is_directory = file->d_type == DT_DIR;
+        it->filename = S8_CopyChar(it->arena, file->d_name);
 
-            S8_String n = S8_Format(scratch.arena, "%.*s/%s", S8_Expand(path), dir->d_name);
-            if ((flags & OS_RELATIVE_PATHS) == 0) {
-                n = OS_GetAbsolutePath(scratch.arena, n);
-            }
-            if (dir->d_type == DT_DIR) {
-                n = S8_Format(scratch.arena, "%.*s/", S8_Expand(n));
-            }
-
-            S8_AddNode(arena, &result, S8_Copy(arena, n));
-        }
-        closedir(d);
+        const char *is_dir = it->is_directory ? "/" : "";
+        const char *separator = it->path.str[it->path.len - 1] == '/' ? "" : "/";
+        it->relative_path = S8_Format(it->arena, "%.*s%s%s%s", S8_Expand(it->path), separator, file->d_name, is_dir);
+        it->absolute_path = OS_GetAbsolutePath(it->arena, it->relative_path);
+        it->is_valid = true;
+        return;
     }
+    it->is_valid = false;
+    closedir((DIR *)it->dir);
+}
 
-    MA_ReleaseScratch(scratch);
-    return result;
+OS_API OS_FileIter OS_IterateFiles(MA_Arena *arena, S8_String path) {
+    OS_FileIter it = {0};
+    it.arena = arena;
+    it.path = path = S8_Copy(arena, path);
+    it.dir = (void *)opendir((char *)path.str);
+    if (!it.dir) return it;
+
+    OS_Advance(&it);
+    return it;
 }
 
 OS_API OS_Result OS_MakeDir(S8_String path) {
@@ -651,7 +656,7 @@ OS_API OS_Result OS_WriteFile(S8_String path, S8_String string) {
 OS_API int OS_SystemF(const char *string, ...) {
     MA_Checkpoint scratch = MA_GetScratch();
     S8_FORMAT(scratch.arena, string, result);
-    IO_Printf("Executing: %s\n", result.str);
+    IO_Printf("Executing: %.*s\n", S8_Expand(result));
     fflush(stdout);
     int error_code = system(result.str);
     MA_ReleaseScratch(scratch);
@@ -664,45 +669,6 @@ OS_API S8_String UTF_CreateStringFromWidechar(MA_Arena *arena, wchar_t *wstr, in
     int64_t size = UTF_CreateCharFromWidechar(buffer, buffer_size, wstr, wsize);
     IO_Assert(size < buffer_size);
     return S8_Make(buffer, size);
-}
-
-OS_API S8_List S8_SplitOnRegex(MA_Arena *arena, S8_String string, S8_String regex, unsigned flags) {
-    S8_List result = S8_MakeEmptyList();
-    int64_t index = 0;
-
-    char buff[4096];
-    RE_Regex *re = RE2_Parse(buff, sizeof(buff), regex.str, regex.len);
-    for (RE_Match match = RE3_Find(re, string.str, string.len); match.pos != -1; match = RE3_Find(re, string.str, string.len)) {
-        S8_String before_match = S8_Make(string.str, match.pos);
-        S8_String the_match = S8_Make(string.str + match.pos, match.size);
-        if (before_match.len) S8_AddNode(arena, &result, before_match);
-        if (flags & S8_SplitFlag_SplitInclusive) {
-            if (the_match.len) S8_AddNode(arena, &result, the_match);
-        }
-        string = S8_Skip(string, match.pos + match.size);
-    }
-    S8_AddNode(arena, &result, string);
-    return result;
-}
-
-OS_API S8_List OS_ListDirRegex(MA_Arena *arena, S8_String path, unsigned flags, char *regex) {
-    S8_List result = S8_MakeEmptyList();
-
-    char buff[4096];
-    RE_Regex *re = RE1_Parse(buff, sizeof(buff), regex);
-    S8_List files = OS_ListDir(arena, path, flags);
-    for (S8_Node *it = files.first; it; it = it->next) {
-        if (RE3_AreEqual(re, it->string.str, it->string.len)) {
-            S8_AddNode(arena, &result, it->string);
-        }
-    }
-    return result;
-}
-
-OS_API S8_String OS_ListDirRegexAsString(MA_Arena *arena, S8_String path, unsigned flags, char *regex) {
-    S8_List files = OS_ListDirRegex(arena, path, flags, regex);
-    S8_String files_str = S8_MergeWithSeparator(arena, files, S8_Lit(" "));
-    return files_str;
 }
 
 OS_API bool OS_ExpandIncludesList(MA_Arena *arena, S8_List *out, S8_String filepath) {
