@@ -25,7 +25,6 @@ struct OS_Date {
     uint32_t hour;
     uint32_t minute;
     uint32_t second;
-    uint32_t milliseconds;
 };
 
 typedef struct OS_FileIter OS_FileIter;

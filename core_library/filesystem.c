@@ -375,7 +375,7 @@ OS_API OS_Date OS_GetDate(void) {
     result.day = local.wDay;
     result.hour = local.wHour;
     result.second = local.wSecond;
-    result.milliseconds = local.wMilliseconds;
+    // result.milliseconds = local.wMilliseconds;
     return result;
 }
 
@@ -557,7 +557,17 @@ OS_API int64_t OS_GetFileModTime(S8_String file) {
 }
 
 OS_API OS_Date OS_GetDate(void) {
+    time_t t = time(NULL);
+    struct tm date = *localtime(&t);
+
     OS_Date s = {0};
+    s.second = date.tm_sec;
+    s.year = date.tm_year;
+    s.month = date.tm_mon;
+    s.day = date.tm_mday;
+    s.hour = date.tm_hour;
+    s.minute = date.tm_min;
+
     return s;
 }
 

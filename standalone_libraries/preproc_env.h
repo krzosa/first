@@ -102,6 +102,16 @@
     #define IF_LINUX_ELSE(x, y) y
 #endif
 
+#if OS_WINDOWS
+    #define OS_NAME "Windows"
+#elif OS_LINUX
+    #define OS_NAME "Linux"
+#elif OS_MAC
+    #define OS_NAME "MacOS"
+#else
+    #error couldn't figure out OS
+#endif
+
 // #if COMPILER_CLANG
 //     #pragma clang diagnostic push
 //     #pragma clang diagnostic ignored "-Wmicrosoft-enum-forward-reference"

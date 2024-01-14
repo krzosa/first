@@ -31,7 +31,7 @@ IO_StaticFunc int IO_Strlen(char *string) {
     return len;
 }
 
-void (*IO_User_OutputMessage)(char *str, int len);
+void (*IO_User_OutputMessage)(int kind, char *file, int line, char *str, int len);
 
 IO_API bool IO__FatalErrorf(const char *file, int line, const char *msg, ...) {
     va_list args1;
@@ -83,7 +83,7 @@ IO_API bool IO__FatalErrorf(const char *file, int line, const char *msg, ...) {
     return ret == IO_ErrorResult_Break;
 }
 
-IO_API void IO_Printf(const char *msg, ...) {
+IO_API void IO__Printf(int kind, char *file, int line, const char *msg, ...) {
     // First try to use a static buffer. That can fail because the message
     // can be bigger then the buffer. Allocate enough memory to fit in that
     // case.
@@ -107,7 +107,7 @@ IO_API void IO_Printf(const char *msg, ...) {
     va_end(args1);
 
     if (IO_User_OutputMessage) {
-        IO_User_OutputMessage(result, size);
+        IO_User_OutputMessage(kind, file, line, result, size);
     }
     else {
         IO_OutputMessage(result, size);
@@ -127,10 +127,9 @@ IO_API bool IO__FatalError(char *msg) {
     return result == IO_ErrorResult_Break;
 }
 
-IO_API void IO_Print(char *msg) {
-    int len = IO_Strlen(msg);
+IO_API void IO_Print(int kind, char *file, int line, char *msg, int len) {
     if (IO_User_OutputMessage) {
-        IO_User_OutputMessage(msg, len);
+        IO_User_OutputMessage(kind, file, line, msg, len);
     }
     else {
         IO_OutputMessage(msg, len);

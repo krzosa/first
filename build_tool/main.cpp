@@ -33,7 +33,7 @@ int main(int argument_count, char **arguments) {
         }
 
         if (build_file.str == 0) {
-            IO_Printf("IDLE Nothing to do, couldnt find build file in current dir: %.*s, exiting ... \n", S8_Expand(working_dir));
+            IO_Printf("Couldnt find build file in current dir: %.*s, exiting ... \n", S8_Expand(working_dir));
             return 0;
         }
     }
@@ -69,7 +69,7 @@ int main(int argument_count, char **arguments) {
     if (build_file.str) {
         int result = OS_SystemF(IF_WINDOWS_ELSE("", "./") "%.*s %.*s", S8_Expand(exe_name), S8_Expand(cmdline_args));
         if (result != 0) {
-            printf("FAILED execution of the build file!\n");
+            IO_Printf("FAILED execution of the build file!\n");
             return 1;
         }
     }
