@@ -4,6 +4,7 @@
 #include "test_arena.cpp"
 
 void TestClexer();
+
 int main() {
     TestSimpleInsertAndIntegrity();
     TestStrings();
@@ -22,7 +23,7 @@ int main() {
 
     TestClexer();
 
-    // Unicode iteration over codepoints
+    // Unicode iteration over codepoints using For
     {
         S8_String s = "mrówka";
 
@@ -34,6 +35,23 @@ int main() {
             }
         }
         IO_Assert(found_two_byte);
+    }
+
+    // List iteration using For
+    {
+        MA_Scratch scratch;
+        S8_List list = {};
+        S8_AddF(scratch, &list, "1");
+        S8_AddF(scratch, &list, "2");
+        S8_AddF(scratch, &list, "3");
+        S8_AddF(scratch, &list, "4");
+        S8_AddF(scratch, &list, "5");
+
+        int i = 0;
+        For(list) {
+            i += 1;
+        }
+        IO_Assert(i == 5);
     }
 }
 

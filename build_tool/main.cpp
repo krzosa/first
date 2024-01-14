@@ -49,7 +49,7 @@ int main(int argument_count, char **arguments) {
             result = OS_SystemF("cl %.*s -Fe:%.*s -WX -W3 -wd4200 -diagnostics:column -nologo -Zi", S8_Expand(build_file), S8_Expand(exe_name));
         }
         else if (cc == "clang"_s) {
-            result = OS_SystemF("clang++ -std=c++11 -Wno-writable-strings %.*s -o %.*s -g", S8_Expand(build_file), S8_Expand(exe_name));
+            result = OS_SystemF("clang++ -std=c++11 -fdiagnostics-absolute-paths -Wno-writable-strings %.*s -o %.*s -g", S8_Expand(build_file), S8_Expand(exe_name));
         }
         else {
             IO_Assert(cc == "gcc"_s);

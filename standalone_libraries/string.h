@@ -36,12 +36,6 @@ struct S8_String {
     struct Iter {
         UTF8_Iter i;
 
-        Iter operator++(int) {
-            Iter ret = *this;
-            UTF8_Advance(&i);
-            return ret;
-        }
-
         Iter &operator++() {
             UTF8_Advance(&i);
             return *this;
@@ -67,6 +61,23 @@ struct S8_List {
     int64_t char_count;
     S8_Node *first;
     S8_Node *last;
+
+#if defined(__cplusplus)
+    struct Iter {
+        S8_Node *it;
+
+        Iter &operator++() {
+            it = it->next;
+            return *this;
+        }
+
+        friend bool operator!=(const Iter &a, const Iter &b) { return a.it != b.it; }
+        S8_String &operator*() { return it->string; }
+    };
+
+    Iter begin() { return {first}; }
+    Iter end() { return {0}; }
+#endif
 };
 
 typedef int S8_FindFlag;
