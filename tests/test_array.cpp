@@ -1,4 +1,3 @@
-#include "../core_library/core.c"
 void TestExclusiveArenaBackedArray() {
     MA_Scratch scratch;
     MA_Arena ex = MA_Create();
@@ -117,13 +116,4 @@ void TestCopy() {
     IO_Assert(a.len == c.len && a.cap == c.cap);
 
     a.dealloc();
-}
-
-int main() {
-    TestExclusiveArenaBackedArray();
-    TestRemoveForLoop();
-    TestBasic();
-    TestReverseLoop();
-    TestCopy();
-    return 0;
 }
