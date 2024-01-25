@@ -1,33 +1,3 @@
-/*
------------------ CL.EXE -----------------
-FLAGS        = /MP /Zi /FC /WX /W3 /wd4200 /diagnostics:column /nologo -D_CRT_SECURE_NO_WARNINGS /GF /Gm- /Oi
-LINK         = /link /incremental:no
-STD_OFF      = /GR- /EHa-
-STD_ON       = /EHsc
-DEBUG        = -Od -D_DEBUG -fsanitize=address -RTC1
-RELEASE      = -O2 -MT -DNDEBUG -GL
-RELEASE_LINK = -opt:ref -opt:icf
------------------ CL.EXE -----------------
-/FC      = Print full paths in diagnostics
-/Gm-     = Old feature, 'minimal compilation', in case it's not off by default
-/GF      = Pools strings as read-only. If you try to modify strings under /GF, an application error occurs.
-/Oi      = Replaces some function calls with intrinsic
-/MP      = Multithreaded compilation
-/GR-     = Disable runtime type information
-/EHa-    = Disable exceptions
-/EHsc    = Enable exceptions
-/MT      = Link static libc. The 'd' means debug version
-/MD      = Link dynamic libc. The 'd' means debug version
-/GL      = Whole program optimization
-/RTC1    = runtime error checks
-/opt:ref = eliminates functions and data that are never referenced
-/opt:icf = eliminates redundant 'COMDAT's
-
------------------ CLANG -----------------
-FLAGS = -fdiagnostics-absolute-paths -g -Wno-writable-strings
-DEBUG = -fsanitize=address
-*/
-
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -48,6 +18,39 @@ Table<S8_String> CMDLine;
 
 #include "cache.cpp"
 #include "easy_strings.cpp"
+
+S8_String CL_Flags = "/MP /Zi /FC /WX /W3 /wd4200 /diagnostics:column /nologo -D_CRT_SECURE_NO_WARNINGS /GF /Gm- /Oi";
+S8_String CL_Link = "/link /incremental:no";
+S8_String CL_StdOff = "/GR- /EHa-";
+S8_String CL_StdOn = "/EHsc";
+S8_String CL_Debug = "-Od -D_DEBUG -fsanitize=address -RTC1";
+S8_String CL_Release = "-O2 -MT -DNDEBUG -GL";
+S8_String CL_ReleaseLink = "-opt:ref -opt:icf";
+/*
+/FC      = Print full paths in diagnostics
+/Gm-     = Old feature, 'minimal compilation', in case it's not off by default
+/GF      = Pools strings as read-only. If you try to modify strings under /GF, an application error occurs.
+/Oi      = Replaces some function calls with intrinsic
+/MP      = Multithreaded compilation
+/GR-     = Disable runtime type information
+/EHa-    = Disable exceptions
+/EHsc    = Enable exceptions
+/MT      = Link static libc. The 'd' means debug version
+/MD      = Link dynamic libc. The 'd' means debug version
+/GL      = Whole program optimization
+/RTC1    = runtime error checks
+/opt:ref = eliminates functions and data that are never referenced
+/opt:icf = eliminates redundant 'COMDAT's
+*/
+
+S8_String Clang_Flags = "-fdiagnostics-absolute-paths -Wno-writable-strings";
+S8_String Clang_Debug = "-fsanitize=address -g";
+/*
+-std=c++11
+ */
+
+S8_String GCC_Flags = "-Wno-write-strings";
+S8_String GCC_Debug = "-fsanitize=address -g";
 
 #ifndef BUILD_MAIN
 int Main();
