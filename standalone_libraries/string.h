@@ -131,7 +131,8 @@ S8_API bool S8_EndsWith(S8_String a, S8_String end, unsigned ignore_case S8_IF_C
 S8_API bool S8_StartsWith(S8_String a, S8_String start, unsigned ignore_case S8_IF_CPP(= false));
 S8_API S8_String S8_Make(char *str, int64_t len);
 S8_API S8_String S8_Copy(S8_Allocator allocator, S8_String string);
-S8_API void S8_NormalizePath(S8_String s);
+S8_API S8_String S8_NormalizePath(S8_Allocator allocator, S8_String s);
+S8_API void S8_NormalizePathUnsafe(S8_String s); // make sure there is no way string is const etc.
 S8_API S8_String S8_Chop(S8_String string, int64_t len);
 S8_API S8_String S8_Skip(S8_String string, int64_t len);
 S8_API S8_String S8_GetPostfix(S8_String string, int64_t len);

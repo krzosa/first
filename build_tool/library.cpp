@@ -54,38 +54,3 @@ S8_String GCC_Flags = "-Wno-write-strings";
 S8_String GCC_NoStd = "-fno-exceptions";
 S8_String GCC_Debug = "-fsanitize=address -g";
 
-#ifndef BUILD_MAIN
-int Main();
-
-void BUILD_ReportError(S8_String it) {
-    IO_FatalErrorf("Invalid command line argument syntax! Expected a key value pair!\n"
-                   "Here is the wrong argument: %.*s\n"
-                   "Here is a good example: bld.exe profile=release platform=windows\n",
-                   S8_Expand(it));
-}
-
-int main(int argc, char **argv) {
-
-    if (argc > 1) IO_Printf("Command line arguments:\n");
-    for (int i = 1; i < argc; i += 1) {
-        S8_String it = S8_MakeFromChar(argv[i]);
-
-        int64_t idx = 0;
-        if (S8_Seek(it, "="_s, 0, &idx)) {
-            S8_String key = S8_GetPrefix(it, idx);
-            S8_String value = S8_Skip(it, idx + 1);
-            if (key.len == 0) BUILD_ReportError(it);
-            if (value.len == 0) BUILD_ReportError(it);
-            IO_Printf("[%d] %.*s = %.*s\n", i, S8_Expand(key), S8_Expand(value));
-
-            CMDLine.put(key, value);
-        }
-        else BUILD_ReportError(it);
-    }
-
-    SRC_InitCache(Perm, S8_Lit("build_file.cache"));
-    int result = Main();
-    if (result == 0) SRC_SaveCache();
-    return result;
-}
-#endif

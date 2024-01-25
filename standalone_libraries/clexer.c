@@ -722,7 +722,7 @@ CL_PRIVATE_FUNCTION bool CL_LexMacro(CL_Lexer *T, CL_Token *token) {
 }
 
 // Skipped space here is for case #define Memes (a), this is not a function like macro because of space
-static uint32_t CL_TokenID; // @todo: make it stable, thread local?
+static uint32_t CL_TokenID; // @todo: make it read only
 CL_PRIVATE_FUNCTION void CL_PrepareToken(CL_Lexer *T, CL_Token *token, bool skipped_space) {
     CL_MemoryZero(token, sizeof(*token));
     token->str = T->stream;

@@ -3,8 +3,10 @@
 void Compile(S8_String cc, S8_String files);
 int ReturnValue = 0;
 
-int Main() {
-    S8_String cc = CMDLine.get("cc", ON_WINDOWS("cl") ON_MAC("clang") ON_LINUX("gcc"));
+int main(int argc, char **argv) {
+    Array<S8_String> cmd = CMD_Make(argv, argc);
+    S8_String cc = CMD_Get(cmd, "cc", IF_WINDOWS("cl") IF_MAC("clang") IF_LINUX("gcc"));
+
     Compile(cc, "../tests/test_main.cpp");
     Compile(cc, "../tests/test_filesystem.c");
 

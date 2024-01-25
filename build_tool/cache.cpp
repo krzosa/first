@@ -1,5 +1,5 @@
-
 #define SRC_CACHE_ENTRY_COUNT 1024
+
 struct SRC_CacheEntry {
     uint64_t filepath_hash;
     uint64_t file_hash;
@@ -18,6 +18,11 @@ SRC_Cache *SRC_InMemoryCache;
 SRC_Cache *SRC_FromFileCache;
 S8_String SRC_CacheFilename;
 CL_SearchPaths SRC_SearchPaths = {}; // @todo;
+
+#define SRC_CacheScope(cache_filename) \
+    SRC_InitCache(Perm, cache_filename); \
+    defer { SRC_SaveCache(); };
+
 
 void SRC_InitCache(MA_Arena *arena, S8_String cachefilename) {
     SRC_CacheFilename = cachefilename;

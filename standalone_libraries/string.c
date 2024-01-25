@@ -120,7 +120,16 @@ S8_API S8_String S8_CopyChar(S8_Allocator allocator, char *s) {
     return result;
 }
 
-S8_API void S8_NormalizePath(S8_String s) {
+S8_API S8_String S8_NormalizePath(S8_Allocator allocator, S8_String s) {
+    S8_String copy = S8_Copy(allocator, s);
+    for (int64_t i = 0; i < copy.len; i++) {
+        if (copy.str[i] == '\\')
+            copy.str[i] = '/';
+    }
+    return copy;
+}
+
+S8_API void S8_NormalizePathUnsafe(S8_String s) {
     for (int64_t i = 0; i < s.len; i++) {
         if (s.str[i] == '\\')
             s.str[i] = '/';

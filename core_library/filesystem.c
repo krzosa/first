@@ -47,7 +47,7 @@ OS_API S8_String OS_GetExePath(MA_Arena *arena) {
     IO_Assert(wsize != 0);
 
     S8_String path = UTF_CreateStringFromWidechar(arena, wbuffer, wsize);
-    S8_NormalizePath(path);
+    S8_NormalizePathUnsafe(path);
     return path;
 }
 
@@ -67,7 +67,7 @@ OS_API S8_String OS_GetWorkingDir(MA_Arena *arena) {
     wbuffer[wsize] = 0;
 
     S8_String path = UTF_CreateStringFromWidechar(arena, wbuffer, wsize);
-    S8_NormalizePath(path);
+    S8_NormalizePathUnsafe(path);
     return path;
 }
 
@@ -85,7 +85,7 @@ OS_API S8_String OS_GetAbsolutePath(MA_Arena *arena, S8_String relative) {
     if (written == 0)
         return S8_MakeEmpty();
     S8_String path = UTF_CreateStringFromWidechar(arena, wpath_abs, written);
-    S8_NormalizePath(path);
+    S8_NormalizePathUnsafe(path);
     return path;
 }
 
@@ -153,8 +153,8 @@ OS_API void OS_Advance(OS_FileIter *it) {
 
         it->is_directory = data->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
         it->filename = UTF_CreateStringFromWidechar(it->arena, data->cFileName, S8_WideLength(data->cFileName));
-        char *is_dir = it->is_directory ? "/" : "";
-        char *separator = it->path.str[it->path.len - 1] == '/' ? "" : "/";
+        const char *is_dir = it->is_directory ? "/" : "";
+        const char *separator = it->path.str[it->path.len - 1] == '/' ? "" : "/";
         it->relative_path = S8_Format(it->arena, "%.*s%s%.*s%s", S8_Expand(it->path), separator, S8_Expand(it->filename), is_dir);
         it->absolute_path = OS_GetAbsolutePath(it->arena, it->relative_path);
         it->is_valid = true;

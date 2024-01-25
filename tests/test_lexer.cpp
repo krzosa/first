@@ -6,19 +6,16 @@
 #define CL_SNPRINTF stbsp_snprintf
 #include "../standalone_libraries/clexer.c"
 
-void TestClexer() {
+void TestLexDir(S8_String dir) {
     MA_Scratch scratch;
-    for (OS_FileIter iter = OS_IterateFiles(scratch, "../standalone_libraries"); OS_IsValid(iter); OS_Advance(&iter)) {
+    char buff[1024];
+    char msg_buff[1024];
+    for (OS_FileIter iter = OS_IterateFiles(scratch, dir); OS_IsValid(iter); OS_Advance(&iter)) {
         S8_String file = OS_ReadFile(scratch, iter.absolute_path);
+        if (!file.str) continue;
         CL_Lexer lexer = CL_Begin(scratch, file.str, iter.absolute_path.str);
 
-        char buff[1024];
-        char msg_buff[1024];
-        int token_count = 0;
-        for (;;) {
-            if (iter.filename == "preproc_env.h") {
-                int a = 10;
-            }
+        for (int i = 0;; i += 1) {
             CL_Token token = CL_Next(&lexer);
             if (token.kind == CL_EOF) break;
 
@@ -30,10 +27,13 @@ void TestClexer() {
             }
 
             CL_Stringify(buff, sizeof(buff), &token);
-            token_count += 1;
         }
-        // IO_Printf("%.*s token count = %d\n", S8_Expand(iter.absolute_path), token_count);
     }
+}
 
-    S8_String filename = "../standalone_libraries/clexer.c";
+void TestClexer() {
+    TestLexDir("../standalone_libraries");
+    TestLexDir("../core_library");
+    TestLexDir("../build_tool");
+    TestLexDir("../tests");
 }

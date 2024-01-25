@@ -75,17 +75,6 @@ S8_String Fmt(const char *str, ...) {
     return str_fmt;
 }
 
-bool CodeWasModified(S8_String str, S8_String artifact = {}) {
-    return SRC_WasModified(str, artifact);
-}
-
-S8_String IfCodeWasModified(S8_String cfile, S8_String objfile) {
-    Array<S8_String> result = {};
-    if (SRC_WasModified(cfile, objfile))
-        return cfile;
-    return objfile;
-}
-
 int Run(Array<S8_String> s) {
     S8_String cmd = Merge(s);
     return OS_SystemF("%.*s", S8_Expand(cmd));
@@ -97,4 +86,37 @@ Array<S8_String> ListDir(char *dir) {
         result.add(S8_Copy(Perm, it.absolute_path));
     }
     return result;
+}
+
+Array<S8_String> CMD_Make(char **argv, int argc) {
+    Array<S8_String> result = {Perm};
+    IO_Printf("Command line arguments:\n");
+    for (int i = 1; i < argc; i += 1) {
+        S8_String it = S8_MakeFromChar(argv[i]);
+        result.add(it);
+
+        IO_Printf("[%d] %.*s\n", i, S8_Expand(it));
+    }
+    return result;
+}
+
+S8_String CMD_Get(Array<S8_String> &cmd, S8_String name, S8_String default_value = "") {
+    For(cmd) {
+        int64_t idx = 0;
+        if (S8_Seek(it, "="_s, 0, &idx)) {
+            S8_String key = S8_GetPrefix(it, idx);
+            S8_String value = S8_Skip(it, idx + 1);
+            if (key == name) {
+                return value;
+            }
+        }
+    }
+    return default_value;
+}
+
+bool CMD_Match(Array<S8_String> &cmd, S8_String name) {
+    For(cmd) {
+        if (it == name) return true;
+    }
+    return false;
 }

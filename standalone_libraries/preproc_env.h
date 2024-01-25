@@ -81,24 +81,24 @@
 #endif
 
 #if OS_MAC
-    #define ON_MAC(x) x
+    #define IF_MAC(x) x
 #else
-    #define ON_MAC(x)
+    #define IF_MAC(x)
 #endif
 
 #if OS_WINDOWS
-    #define ON_WINDOWS(x) x
+    #define IF_WINDOWS(x) x
     #define IF_WINDOWS_ELSE(x, y) x
 #else
-    #define ON_WINDOWS(x)
+    #define IF_WINDOWS(x)
     #define IF_WINDOWS_ELSE(x, y) y
 #endif
 
 #if OS_LINUX
-    #define ON_LINUX(x) x
+    #define IF_LINUX(x) x
     #define IF_LINUX_ELSE(x, y) x
 #else
-    #define ON_LINUX(x)
+    #define IF_LINUX(x)
     #define IF_LINUX_ELSE(x, y) y
 #endif
 
