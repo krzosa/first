@@ -21,7 +21,7 @@ void Compile(S8_String cc, S8_String file) {
         Array<S8_String> flags = Split("/MP /Zi -D_CRT_SECURE_NO_WARNINGS /GF /Gm- /Oi");
         flags += Split("/FC /WX /W3 /wd4200 /diagnostics:column /nologo");
         flags += Split("/GR- /EHa-");
-        flags += Split("-fsanitize=address -RTC1");
+        flags += Split("-RTC1");
 
         Array<S8_String> link = Split("/link /incremental:no");
         S8_String name = Fmt("/Fe:%.*s", S8_Expand(exe));
@@ -55,6 +55,6 @@ void Compile(S8_String cc, S8_String file) {
         result = Run(cc + file + name + flags);
     }
 
-    if (result == 0) result = OS_SystemF(IF_WINDOWS_ELSE("", "./") "%.*s.exe", S8_Expand(exe));
+    if (result == 0) result = OS_SystemF(IF_WINDOWS_ELSE("", "./") "%.*s", S8_Expand(exe));
     else ReturnValue = result;
 }

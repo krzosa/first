@@ -615,9 +615,17 @@ CL_PRIVATE_FUNCTION void CL_IsIdentifierKeyword(CL_Token *token) {
     }
 }
 
+CL_PRIVATE_FUNCTION void CL_EatMacroWhitespace(CL_Lexer *T) {
+    while (T->stream[0] == ' ' || T->stream[0] == '\t') CL_Advance(T);
+}
+
+CL_PRIVATE_FUNCTION void CL_EatUntil(CL_Lexer *T, char c) {
+    while (T->stream[0] != c && T->stream[0] != 0) CL_Advance(T);
+}
+
 CL_PRIVATE_FUNCTION void CL_LexMacroInclude(CL_Lexer *T, CL_Token *token) {
     token->kind = CL_PREPROC_INCLUDE;
-    while (*T->stream == ' ') CL_Advance(T);
+    CL_EatMacroWhitespace(T);
     char end = 0;
     if (*T->stream == '"') {
         end = '"';
@@ -650,7 +658,7 @@ CL_PRIVATE_FUNCTION void CL_LexMacroInclude(CL_Lexer *T, CL_Token *token) {
 }
 
 CL_PRIVATE_FUNCTION bool CL_LexMacro(CL_Lexer *T, CL_Token *token) {
-    while (*T->stream == ' ' || T->stream[0] == '\t') CL_Advance(T);
+    CL_EatMacroWhitespace(T);
     token->str = T->stream;
     while (CL_IsAlphabetic(*T->stream)) CL_Advance(T);
     CL_SetTokenLength(T, token);
@@ -684,6 +692,10 @@ CL_PRIVATE_FUNCTION bool CL_LexMacro(CL_Lexer *T, CL_Token *token) {
             }
             else if (CL_StringsAreEqual(token->str, token->len, "error", 5)) {
                 token->kind = CL_PREPROC_ERROR;
+                CL_EatMacroWhitespace(T);
+                token->str = T->stream;
+                CL_EatUntil(T, '\n');
+                CL_SetTokenLength(T, token);
             }
             else if (CL_StringsAreEqual(token->str, token->len, "else", 4)) {
                 token->kind = CL_PREPROC_ELSE;
@@ -750,10 +762,7 @@ CL_PRIVATE_FUNCTION void CL_DefaultTokenize(CL_Lexer *T, CL_Token *token) {
             if (*T->stream == '/') {
                 token->kind = CL_COMMENT;
                 CL_Advance(T);
-
-                while (*T->stream != '\n' && *T->stream != 0) {
-                    CL_Advance(T);
-                }
+                CL_EatUntil(T, '\n');
                 CL_SetTokenLength(T, token);
             }
             else if (*T->stream == '*') {
@@ -1480,13 +1489,13 @@ const char *CL_KindString[] = {
 };
 
 CL_API_FUNCTION void CL_StringifyMessage(char *buff, int buff_size, CL_Message *msg) {
-    CL_SNPRINTF(buff, buff_size, "%s:%d %15s", msg->token.file, msg->token.line, msg->string);
+    CL_SNPRINTF(buff, buff_size, "%s(%d,%d): %15s", msg->token.file, msg->token.line + 1, msg->token.column + 1, msg->string);
 }
 
 CL_API_FUNCTION void CL_Stringify(char *buff, int buff_size, CL_Token *token) {
     const char *token_kind = "UNKNOWN";
     if (token->kind < CL_COUNT) token_kind = CL_KindString[token->kind];
-    CL_SNPRINTF(buff, buff_size, "%s:%d %15s %15.*s", token->file, token->line, token_kind, token->len, token->str);
+    CL_SNPRINTF(buff, buff_size, "%s(%d,%d): %15s %15.*s", token->file, token->line + 1, token->column + 1, token_kind, token->len, token->str);
 }
 
 #define CL_SLL_QUEUE_ADD_MOD(f, l, n, next) \
