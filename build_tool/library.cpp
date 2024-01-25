@@ -44,12 +44,14 @@ S8_String CL_ReleaseLink = "-opt:ref -opt:icf";
 */
 
 S8_String Clang_Flags = "-fdiagnostics-absolute-paths -Wno-writable-strings";
+S8_String Clang_NoStd = "-fno-exceptions";
 S8_String Clang_Debug = "-fsanitize=address -g";
 /*
 -std=c++11
  */
 
 S8_String GCC_Flags = "-Wno-write-strings";
+S8_String GCC_NoStd = "-fno-exceptions";
 S8_String GCC_Debug = "-fsanitize=address -g";
 
 #ifndef BUILD_MAIN
