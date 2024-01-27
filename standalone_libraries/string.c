@@ -529,3 +529,38 @@ S8_API S8_String S8_AddF(S8_Allocator allocator, S8_List *list, const char *str,
     S8_AddNode(allocator, list, result);
     return result;
 }
+
+#ifdef UTF_HEADER
+
+S8_API S16_String S8_ToWidecharEx(S8_Allocator allocator, S8_String string) {
+    S8_ASSERT(sizeof(wchar_t) == 2);
+    wchar_t *buffer = (wchar_t *)S8_ALLOCATE(allocator, sizeof(wchar_t) * (string.len + 1));
+    int64_t size = UTF_CreateWidecharFromChar(buffer, string.len + 1, string.str, string.len);
+    S16_String result = {buffer, size};
+    return result;
+}
+
+S8_API wchar_t *S8_ToWidechar(S8_Allocator allocator, S8_String string) {
+    S16_String result = S8_ToWidecharEx(allocator, string);
+    return result.str;
+}
+
+S8_API S8_String S8_FromWidecharEx(S8_Allocator allocator, wchar_t *wstring, int64_t wsize) {
+    S8_ASSERT(sizeof(wchar_t) == 2);
+
+    int64_t buffer_size = (wsize + 1) * 2;
+    char *buffer = (char *)S8_ALLOCATE(allocator, buffer_size);
+    int64_t size = UTF_CreateCharFromWidechar(buffer, buffer_size, wstring, wsize);
+    S8_String result = S8_Make(buffer, size);
+
+    S8_ASSERT(size < buffer_size);
+    return result;
+}
+
+S8_API S8_String S8_FromWidechar(S8_Allocator allocator, wchar_t *wstring) {
+    int64_t size = S8_WideLength(wstring);
+    S8_String result = S8_FromWidecharEx(allocator, wstring, size);
+    return result;
+}
+
+#endif

@@ -1,5 +1,5 @@
 #ifndef _CRT_SECURE_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS
+    #define _CRT_SECURE_NO_WARNINGS
 #endif
 
 #include "../core_library/core.c"
@@ -53,4 +53,3 @@ S8_String Clang_Debug = "-fsanitize=address -g";
 S8_String GCC_Flags = "-Wno-write-strings";
 S8_String GCC_NoStd = "-fno-exceptions";
 S8_String GCC_Debug = "-fsanitize=address -g";
-

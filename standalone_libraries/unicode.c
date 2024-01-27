@@ -159,6 +159,9 @@ UTF_API int64_t UTF_CreateCharFromWidechar(char *buffer, int64_t buffer_size, wc
     return outlen;
 }
 
+// @todo: the api here is from one side cool but from other kind of weird
+// int64_t size = UTF_CreateWidecharFromChar(wcmd, cmd.len + 1, cmd.str, cmd.len);
+// the "+ 1" part is bothering me, but if it wrote one past buffer_size, that would be worse
 UTF_API int64_t UTF_CreateWidecharFromChar(wchar_t *buffer, int64_t buffer_size, char *in, int64_t inlen) {
     int64_t outlen = 0;
     for (int64_t i = 0; i < inlen;) {

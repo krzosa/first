@@ -80,6 +80,11 @@ struct S8_List {
 #endif
 };
 
+typedef struct S16_String {
+    wchar_t *str;
+    int64_t len;
+} S16_String;
+
 typedef int S8_FindFlag;
 enum {
     S8_FindFlag_None = 0,
@@ -176,6 +181,11 @@ S8_API S8_List S8_ConcatLists(S8_Allocator allocator, S8_List a, S8_List b);
 S8_API S8_Node *S8_AddNode(S8_Allocator allocator, S8_List *list, S8_String string);
 S8_API S8_Node *S8_Add(S8_Allocator allocator, S8_List *list, S8_String string);
 S8_API S8_String S8_AddF(S8_Allocator allocator, S8_List *list, const char *str, ...) S8__PrintfFormat(3, 4);
+
+S8_API S16_String S8_ToWidecharEx(S8_Allocator allocator, S8_String string);
+S8_API wchar_t *S8_ToWidechar(S8_Allocator allocator, S8_String string);
+S8_API S8_String S8_FromWidecharEx(S8_Allocator allocator, wchar_t *wstring, int64_t wsize);
+S8_API S8_String S8_FromWidechar(S8_Allocator allocator, wchar_t *wstring);
 
 #if defined(__cplusplus)
 inline S8_String operator""_s(const char *str, size_t size) { return {(char *)str, (int64_t)size}; }

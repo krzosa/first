@@ -1,6 +1,21 @@
 #include "clexer.h"
 #include <stdarg.h>
 
+/*
+- I'm pretty sure I can remove allocations for most of the current functions.
+- I also can fix ResolvePath stuff so that it uses string+len and doesn't need allocations
+- Add lexing options like in stb_c_lexer.h
+
+Instead of AND_CL_STRING_TERMINATE_ON_NEW_LINE he is doing some weird cool stuff with redefining
+https://github.com/nothings/stb/blob/master/stb_c_lexer.h
+
+CL_MULTILINE_SSTRINGS
+CL_DOLLAR_IDENT
+
+- Add proper string parsing, as additional function, CL_ParseString() or something, this is the only one that would need allocations
+
+*/
+
 #ifndef CL_PRIVATE_FUNCTION
     #if defined(__GNUC__) || defined(__clang__)
         #define CL_PRIVATE_FUNCTION __attribute__((unused)) static

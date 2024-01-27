@@ -5,3 +5,4 @@ cl -Fe:bld.exe ../build_tool/main.cpp -FC -WX -W3 -wd4200 -diagnostics:column -n
 cd ..
 rem build\bld.exe clear_cache
 build\bld.exe
+rem build\bld.exe cc=clang

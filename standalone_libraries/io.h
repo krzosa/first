@@ -31,7 +31,7 @@ typedef enum IO_ErrorResult {
     #define IO__PrintfFormat(fmt, va)
 #endif
 
-extern void (*IO_User_OutputMessage)(int kind, char *file, int line, char *str, int len);
+extern void (*IO_User_OutputMessage)(int kind, const char *file, int line, char *str, int len);
 
 #define IO__STRINGIFY(x) #x
 #define IO__TOSTRING(x) IO__STRINGIFY(x)
@@ -74,9 +74,9 @@ extern void (*IO_User_OutputMessage)(int kind, char *file, int line, char *str, 
 #define IO_Todo() IO_FatalError("This codepath is not implemented yet")
 
 IO_API bool IO__FatalErrorf(const char *file, int line, const char *msg, ...) IO__PrintfFormat(3, 4);
-IO_API void IO__Printf(int kind, char *file, int line, const char *msg, ...) IO__PrintfFormat(4, 5);
+IO_API void IO__Printf(int kind, const char *file, int line, const char *msg, ...) IO__PrintfFormat(4, 5);
 IO_API bool IO__FatalError(char *msg);
-IO_API void IO_Print(int kind, char *file, int line, char *msg, int len);
+IO_API void IO_Print(int kind, const char *file, int line, char *msg, int len);
 IO_API void IO_OutputMessage(char *str, int len);
 IO_API IO_ErrorResult IO_OutputError(char *str, int len);
 IO_API void IO_Exit(int error_code);

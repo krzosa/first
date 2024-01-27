@@ -3,6 +3,8 @@
    leeway for big buffers and other such things. Just make sure to not relay on it because it's easier unless specified.
 - Not sure if we should assume that strings should use allocators or arenas, for now it's arenas because I don't have other use cases
 @todo
+- Remove static buffers from filesystem, use scratch arenas instead?
+- Use allocators instead of concrete Arenas
 - Add proper string arrays and utilities for build files
     - also add String Arrays and String Builder, temp allocators hook ins for nicer api
 */
@@ -28,7 +30,3 @@
 #include "../standalone_libraries/hash.c"
 #include "../standalone_libraries/load_library.c"
 #include "filesystem.c"
-
-// #if LANG_CPP
-//     #include "string.cpp"
-// #endif

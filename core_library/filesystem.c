@@ -46,7 +46,7 @@ OS_API S8_String OS_GetExePath(MA_Arena *arena) {
     DWORD wsize = GetModuleFileNameW(0, wbuffer, MA_LENGTHOF(wbuffer));
     IO_Assert(wsize != 0);
 
-    S8_String path = UTF_CreateStringFromWidechar(arena, wbuffer, wsize);
+    S8_String path = S8_FromWidecharEx(arena, wbuffer, wsize);
     S8_NormalizePathUnsafe(path);
     return path;
 }
@@ -66,7 +66,7 @@ OS_API S8_String OS_GetWorkingDir(MA_Arena *arena) {
     wbuffer[wsize++] = '/';
     wbuffer[wsize] = 0;
 
-    S8_String path = UTF_CreateStringFromWidechar(arena, wbuffer, wsize);
+    S8_String path = S8_FromWidecharEx(arena, wbuffer, wsize);
     S8_NormalizePathUnsafe(path);
     return path;
 }
@@ -84,7 +84,7 @@ OS_API S8_String OS_GetAbsolutePath(MA_Arena *arena, S8_String relative) {
     DWORD written = GetFullPathNameW((wchar_t *)wpath, MA_LENGTHOF(wpath_abs), wpath_abs, 0);
     if (written == 0)
         return S8_MakeEmpty();
-    S8_String path = UTF_CreateStringFromWidechar(arena, wpath_abs, written);
+    S8_String path = S8_FromWidecharEx(arena, wpath_abs, written);
     S8_NormalizePathUnsafe(path);
     return path;
 }
@@ -152,7 +152,7 @@ OS_API void OS_Advance(OS_FileIter *it) {
         if (data->cFileName[0] == '.' && data->cFileName[1] == 0) continue;
 
         it->is_directory = data->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY;
-        it->filename = UTF_CreateStringFromWidechar(it->arena, data->cFileName, S8_WideLength(data->cFileName));
+        it->filename = S8_FromWidecharEx(it->arena, data->cFileName, S8_WideLength(data->cFileName));
         const char *is_dir = it->is_directory ? "/" : "";
         const char *separator = it->path.str[it->path.len - 1] == '/' ? "" : "/";
         it->relative_path = S8_Format(it->arena, "%.*s%s%.*s%s", S8_Expand(it->path), separator, S8_Expand(it->filename), is_dir);
@@ -672,14 +672,6 @@ OS_API int OS_SystemF(const char *string, ...) {
     int error_code = system(result.str);
     MA_ReleaseScratch(scratch);
     return error_code;
-}
-
-OS_API S8_String UTF_CreateStringFromWidechar(MA_Arena *arena, wchar_t *wstr, int64_t wsize) {
-    int64_t buffer_size = (wsize + 1) * 2;
-    char *buffer = (char *)MA_PushSizeNonZeroed(arena, buffer_size);
-    int64_t size = UTF_CreateCharFromWidechar(buffer, buffer_size, wstr, wsize);
-    IO_Assert(size < buffer_size);
-    return S8_Make(buffer, size);
 }
 
 OS_API bool OS_ExpandIncludesList(MA_Arena *arena, S8_List *out, S8_String filepath) {

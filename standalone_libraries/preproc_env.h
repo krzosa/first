@@ -103,13 +103,13 @@
 #endif
 
 #if OS_WINDOWS
-    #define OS_NAME "Windows"
+    #define OS_NAME "windows"
 #elif OS_LINUX
-    #define OS_NAME "Linux"
+    #define OS_NAME "linux"
 #elif OS_MAC
-    #define OS_NAME "MacOS"
+    #define OS_NAME "mac_os"
 #else
-    #error couldn't figure out OS
+    #error couldnt figure out OS
 #endif
 
 // #if COMPILER_CLANG

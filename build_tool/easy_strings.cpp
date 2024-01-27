@@ -45,7 +45,7 @@ Array<S8_String> Split(char *str) {
     return result;
 }
 
-S8_String Merge(Array<S8_String> list, S8_String separator = " "_s) {
+S8_String Merge(MA_Arena *arena, Array<S8_String> list, S8_String separator = " "_s) {
     int64_t char_count = 0;
     For(list) char_count += it.len;
     if (char_count == 0) return {};
@@ -54,7 +54,7 @@ S8_String Merge(Array<S8_String> list, S8_String separator = " "_s) {
     int64_t base_size = (char_count + 1);
     int64_t sep_size = (node_count - 1) * separator.len;
     int64_t size = base_size + sep_size;
-    char *buff = (char *)MA_PushSize(Perm, sizeof(char) * size);
+    char *buff = (char *)MA_PushSize(arena, sizeof(char) * (size + 1));
     S8_String string = S8_Make(buff, 0);
     For(list) {
         IO_Assert(string.len + it.len <= size);
@@ -68,6 +68,10 @@ S8_String Merge(Array<S8_String> list, S8_String separator = " "_s) {
     IO_Assert(string.len == size - 1);
     string.str[size] = 0;
     return string;
+}
+
+S8_String Merge(Array<S8_String> list, S8_String separator = " ") {
+    return Merge(Perm, list, separator);
 }
 
 S8_String Fmt(const char *str, ...) {

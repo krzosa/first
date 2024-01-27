@@ -10,6 +10,7 @@
 *.10x
 *.sublime-project
 *.sublime-workspace
+*.rdbg
 backup.*
 bld
 imgui.ini
