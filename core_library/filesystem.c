@@ -386,12 +386,19 @@ OS_API OS_Date OS_GetDate(void) {
     #include <time.h>
     #include <dirent.h>
 
-OS_API bool OS_EnableTerminalColors(void) { return true; }
+    #if OS_MAC
 
-OS_API bool OS_IsAbsolute(S8_String path) {
-    bool result = path.len >= 1 && path.str[0] == '/';
+OS_API S8_String OS_GetExePath(MA_Arena *arena) {
+    char buf[PATH_MAX];
+    uint32_t bufsize = PATH_MAX;
+    if (_NSGetExecutablePath(buf, &bufsize)) {
+        return S8_MakeEmpty();
+    }
+    S8_String result = S8_Copy(arena, S8_Make(buf, bufsize));
     return result;
 }
+
+    #else
 
 OS_API S8_String OS_GetExePath(MA_Arena *arena) {
     char buffer[PATH_MAX] = {};
@@ -399,6 +406,15 @@ OS_API S8_String OS_GetExePath(MA_Arena *arena) {
         return S8_MakeEmpty();
     }
     S8_String result = S8_Copy(arena, S8_MakeFromChar(buffer));
+    return result;
+}
+
+    #endif
+
+OS_API bool OS_EnableTerminalColors(void) { return true; }
+
+OS_API bool OS_IsAbsolute(S8_String path) {
+    bool result = path.len >= 1 && path.str[0] == '/';
     return result;
 }
 

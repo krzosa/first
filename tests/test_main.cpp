@@ -6,21 +6,34 @@
 
 int main() {
     TestSimpleInsertAndIntegrity();
+    IO_Printf("TestSimpleInsertAndIntegrity() - DONE\n");
     TestStrings();
+    IO_Printf("TestStrings() - DONE\n");
 
     TestExclusiveArenaBackedArray();
+    IO_Printf("TestExclusiveArenaBackedArray() - DONE\n");
     TestRemoveForLoop();
+    IO_Printf("TestRemoveForLoop() - DONE\n");
     TestBasic();
+    IO_Printf("TestBasic() - DONE\n");
     TestReverseLoop();
+    IO_Printf("TestReverseLoop() - DONE\n");
     TestCopy();
+    IO_Printf("TestCopy() - DONE\n");
 
     TestBuffer();
+    IO_Printf("TestBuffer() - DONE\n");
     TestCreateAllocate();
+    IO_Printf("TestCreateAllocate() - DONE\n");
     TestBootstrap();
+    IO_Printf("TestBootstrap() - DONE\n");
     TestBootstrapExclusive();
+    IO_Printf("TestBootstrapExclusive() - DONE\n");
     TestBootstrapArenaClear();
+    IO_Printf("TestBootstrapArenaClear() - DONE\n");
 
     TestClexer();
+    IO_Printf("TestClexer() - DONE\n");
 
     // Unicode iteration over codepoints using For
     {
