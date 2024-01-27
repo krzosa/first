@@ -97,17 +97,9 @@ int main(int argc, char **argv) {
     // Run exes if there were no errors
     //
     if (result == 0) {
-        processes.reset();
         For(exes) {
-            Process p = RunEx(it);
-            processes.add(p);
-        }
-
-        int i = 0;
-        For(processes) {
-            int exit_code = Wait(&it);
-            S8_String name = exes[i++];
-            IO_Printf("%.*s - %d\n", S8_Expand(name), exit_code);
+            int exit_code = Run(it);
+            IO_Printf("%.*s - %d\n", S8_Expand(it), exit_code);
             if (exit_code != 0) result = exit_code;
         }
     }
