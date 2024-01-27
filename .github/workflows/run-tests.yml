@@ -5,6 +5,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: sudo apt install g++
+      - run: sudo apt install clang
       - run: g++ build_tool/main.cpp -o bld && ./bld
   run-and-compile-mac:
     runs-on: macos-latest
