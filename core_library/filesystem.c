@@ -387,6 +387,7 @@ OS_API OS_Date OS_GetDate(void) {
     #include <dirent.h>
 
     #if OS_MAC
+        #include <mach-o/dyld.h>
 
 OS_API S8_String OS_GetExePath(MA_Arena *arena) {
     char buf[PATH_MAX];
@@ -394,6 +395,7 @@ OS_API S8_String OS_GetExePath(MA_Arena *arena) {
     if (_NSGetExecutablePath(buf, &bufsize)) {
         return S8_MakeEmpty();
     }
+
     S8_String result = S8_Copy(arena, S8_Make(buf, bufsize));
     return result;
 }
