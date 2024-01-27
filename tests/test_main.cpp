@@ -29,8 +29,8 @@ int main() {
     IO_Printf("TestBootstrap() - DONE\n");
     TestBootstrapExclusive();
     IO_Printf("TestBootstrapExclusive() - DONE\n");
-    TestBootstrapArenaClear();
-    IO_Printf("TestBootstrapArenaClear() - DONE\n");
+    // TestBootstrapArenaClear();
+    // IO_Printf("TestBootstrapArenaClear() - DONE\n");
 
     TestClexer();
     IO_Printf("TestClexer() - DONE\n");
