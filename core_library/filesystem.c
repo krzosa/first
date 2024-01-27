@@ -426,7 +426,6 @@ OS_API S8_String OS_GetExeDir(MA_Arena *arena) {
     MA_Checkpoint scratch = MA_GetScratch();
     S8_String path = OS_GetExePath(scratch.arena);
     S8_String dir = S8_ChopLastSlash(path);
-    IO_Printf("DIR: %.*s\n", S8_Expand(path));
     S8_String copy = S8_Copy(arena, dir);
     MA_ReleaseScratch(scratch);
     return copy;

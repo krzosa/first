@@ -55,9 +55,13 @@ int main() {
         S8_String dir_path = OS_GetExeDir(&arena);
         S8_String work_path = OS_GetWorkingDir(&arena);
         S8_String abs_path = OS_GetAbsolutePath(&arena, read_file_path);
+        /*
+        @todo: MAC
+        I have no idea what is happening on mac with this
 
-        IO_Printf("dir_path = %.*s\n", S8_Expand(dir_path));
-        IO_Printf("exe_path = %.*s\n", S8_Expand(exe_path));
+        dir_path = /Users/runner/work/first/first/build/test_filesystem_debug_clang_mac_os/test_filesystem.exe
+        exe_path = /Users/runner/work/first/first/build/test_filesystem_debug_clang_mac_os/test_filesystem.exe
+        */
         IO_Assert(OS_IsDir(dir_path));
         IO_Assert(!OS_IsFile(dir_path));
 
