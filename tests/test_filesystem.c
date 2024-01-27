@@ -56,7 +56,8 @@ int main() {
         S8_String work_path = OS_GetWorkingDir(&arena);
         S8_String abs_path = OS_GetAbsolutePath(&arena, read_file_path);
 
-        IO_Assertf(OS_IsDir(dir_path), "%.*s", S8_Expand(dir_path));
+        IO_Printf("dir_path = %.*s\n", S8_Expand(dir_path));
+        IO_Assert(OS_IsDir(dir_path));
         IO_Assert(!OS_IsFile(dir_path));
 
         IO_Assert(OS_IsFile(exe_path));
