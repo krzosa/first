@@ -49,7 +49,7 @@ int main(int argument_count, char **arguments) {
         }
         else {
             IO_Assert(cc == "gcc");
-            result = OS_SystemF("gcc -Wno-write-strings %.*s -o %.*s -g", S8_Expand(build_file), S8_Expand(exe_name));
+            result = OS_SystemF("g++ -Wno-write-strings %.*s -o %.*s -g", S8_Expand(build_file), S8_Expand(exe_name));
         }
 
         if (result != 0) {

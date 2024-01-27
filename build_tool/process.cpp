@@ -1,24 +1,20 @@
-struct TH_Process {
+struct Process {
     bool is_valid;
     char platform[32];
 };
 
 #if OS_WINDOWS
-TH_Process TH_CreateProcess(S8_String in_cmd, S8_String in_working_dir = "") {
+Process RunEx(S8_String in_cmd) {
     MA_Scratch scratch;
-    if (in_working_dir != "" && !OS_IsAbsolute(in_working_dir)) {
-        in_working_dir = OS_GetAbsolutePath(scratch, in_working_dir);
-    }
-
     wchar_t *application_name = NULL;
     wchar_t *cmd = S8_ToWidechar(scratch, in_cmd);
     BOOL inherit_handles = FALSE;
     DWORD creation_flags = 0;
     void *enviroment = NULL;
-    wchar_t *working_dir = in_working_dir == "" ? NULL : S8_ToWidechar(scratch, in_working_dir);
+    wchar_t *working_dir = NULL;
     STARTUPINFOW startup_info = {};
     startup_info.cb = sizeof(STARTUPINFOW);
-    TH_Process result = {};
+    Process result = {};
     IO_Assert(sizeof(result.platform) >= sizeof(PROCESS_INFORMATION));
     PROCESS_INFORMATION *process_info = (PROCESS_INFORMATION *)result.platform;
     BOOL success = CreateProcessW(application_name, cmd, NULL, NULL, inherit_handles, creation_flags, enviroment, working_dir, &startup_info, process_info);
@@ -32,12 +28,12 @@ TH_Process TH_CreateProcess(S8_String in_cmd, S8_String in_working_dir = "") {
                       NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
         LocalFree(lpMsgBuf);
 
-        IO_FatalErrorf("Failed to create process \nworking_dir: %.*s\ncmd: %.*s\nwindows_message: %s", S8_Expand(in_working_dir), S8_Expand(in_cmd), lpMsgBuf);
+        IO_FatalErrorf("Failed to create process \ncmd: %.*s\nwindows_message: %s", S8_Expand(in_cmd), lpMsgBuf);
     }
     return result;
 }
 
-int TH_WaitForProcessExit(TH_Process *process) {
+int Wait(Process *process) {
     IO_Assert(process->is_valid);
     PROCESS_INFORMATION *pi = (PROCESS_INFORMATION *)process->platform;
     WaitForSingleObject(pi->hProcess, INFINITE);
@@ -61,13 +57,9 @@ struct TH_UnixProcess {
 
 extern char **environ;
 
-TH_Process TH_CreateProcess(S8_String cmd, S8_String working_dir = "") {
+Process RunEx(S8_String cmd) {
     MA_Scratch scratch;
-    if (working_dir != "" && !OS_IsAbsolute(working_dir)) {
-        working_dir = OS_GetAbsolutePath(scratch, working_dir);
-    }
-
-    TH_Process result = {};
+    Process result = {};
     IO_Assert(sizeof(result.platform) >= sizeof(TH_UnixProcess));
     TH_UnixProcess *u = (TH_UnixProcess *)result.platform;
 
@@ -101,23 +93,19 @@ TH_Process TH_CreateProcess(S8_String cmd, S8_String working_dir = "") {
         args.add(NULL);
     }
 
-    S8_String prev_dir = {};
-    if (working_dir != "") prev_dir = OS_GetWorkingDir(scratch);
-    if (working_dir != "") OS_SetWorkingDir(working_dir);
     int err = posix_spawnp(&u->pid, exec_file.str, NULL, NULL, args.data, environ);
     if (err == 0) {
         result.is_valid = true;
     }
     else {
-        perror("Failed to create process");
-        IO_FatalErrorf("Failed to create process \nworking_dir: %.*s\ncmd: %.*s", S8_Expand(working_dir), S8_Expand(cmd));
+        perror("posix_spawnp error");
+        IO_FatalErrorf("Failed to create process, cmd: %.*s", S8_Expand(cmd));
     }
-    if (working_dir != "") OS_SetWorkingDir(prev_dir);
 
     return result;
 }
 
-int TH_WaitForProcessExit(TH_Process *process) {
+int Wait(Process *process) {
     if (!process->is_valid) return 1;
     TH_UnixProcess *u = (TH_UnixProcess *)process->platform;
 
@@ -137,3 +125,31 @@ int TH_WaitForProcessExit(TH_Process *process) {
     return result;
 }
 #endif
+
+Process RunEx(Array<S8_String> s) {
+    S8_String cmd = Merge(s);
+    Process proc = RunEx(cmd);
+    return proc;
+}
+
+Process RunEx(Array<S8_String> s, S8_String process_start_dir) {
+    OS_MakeDir(process_start_dir);
+    S8_String working_dir = OS_GetWorkingDir(Perm);
+    OS_SetWorkingDir(process_start_dir);
+    S8_String cmd = Merge(s);
+    Process proc = RunEx(cmd);
+    OS_SetWorkingDir(working_dir);
+    return proc;
+}
+
+int Run(S8_String cmd) {
+    Process process = RunEx(cmd);
+    int result = Wait(&process);
+    return result;
+}
+
+int Run(Array<S8_String> cmd) {
+    S8_String cmds = Merge(cmd);
+    int result = Run(cmds);
+    return result;
+}

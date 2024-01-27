@@ -18,6 +18,7 @@ Table<S8_String> CMDLine;
 
 #include "cache.cpp"
 #include "easy_strings.cpp"
+#include "process.cpp"
 
 S8_String CL_Flags = "/MP /Zi /FC /WX /W3 /wd4200 /diagnostics:column /nologo -D_CRT_SECURE_NO_WARNINGS /GF /Gm- /Oi";
 S8_String CL_Link = "/link /incremental:no";

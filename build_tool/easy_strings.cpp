@@ -79,11 +79,6 @@ S8_String Fmt(const char *str, ...) {
     return str_fmt;
 }
 
-int Run(Array<S8_String> s) {
-    S8_String cmd = Merge(s);
-    return OS_SystemF("%.*s", S8_Expand(cmd));
-}
-
 Array<S8_String> ListDir(char *dir) {
     Array<S8_String> result = {};
     for (OS_FileIter it = OS_IterateFiles(Perm, S8_MakeFromChar(dir)); OS_IsValid(it); OS_Advance(&it)) {
@@ -94,7 +89,7 @@ Array<S8_String> ListDir(char *dir) {
 
 Array<S8_String> CMD_Make(char **argv, int argc) {
     Array<S8_String> result = {Perm};
-    IO_Printf("Command line arguments:\n");
+    if (argc > 1) IO_Printf("Command line arguments:\n");
     for (int i = 1; i < argc; i += 1) {
         S8_String it = S8_MakeFromChar(argv[i]);
         result.add(it);
