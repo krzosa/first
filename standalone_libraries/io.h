@@ -15,10 +15,10 @@ typedef enum IO_ErrorResult {
     IO_ErrorResult_Exit,
 } IO_ErrorResult;
 
-#ifdef _WIN32
+#if defined(_MSC_VER)
     #define IO_DebugBreak() (__debugbreak(), 0)
 #else
-    #define IO_DebugBreak() (IO_Exit(1), 0)
+    #define IO_DebugBreak() (__builtin_trap(), 0)
 #endif
 
 #if defined(__has_attribute)

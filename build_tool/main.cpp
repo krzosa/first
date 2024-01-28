@@ -56,6 +56,8 @@ int main(int argument_count, char **arguments) {
             flags += "-std=c++11 -g";
             flags += "-fdiagnostics-absolute-paths";
             flags += "-Wno-writable-strings";
+            flags += "-fno-exceptions";
+            flags += "-fno-rtti";
             flags += Fmt("-o %.*s", S8_Expand(exe_name));
             result = Run(cc + build_file + flags);
         }
@@ -65,6 +67,8 @@ int main(int argument_count, char **arguments) {
             Array<S8_String> flags = {Perm};
             flags += "-std=c++11 -g";
             flags += "-Wno-write-strings";
+            flags += "-fno-exceptions";
+            flags += "-fno-rtti";
             flags += Fmt("-o %.*s", S8_Expand(exe_name));
             result = Run(cc + build_file + flags);
         }
@@ -80,6 +84,7 @@ int main(int argument_count, char **arguments) {
     // Run the build file
     double time = OS_GetTime();
     if (build_file.str) {
+        exe_name = OS_GetAbsolutePath(Perm, exe_name);
         int result = Run(exe_name + cmd);
         if (result != 0) {
             IO_Printf("FAILED execution of the build file!\n");

@@ -53,12 +53,14 @@ int main(int argc, char **argv) {
         }
 #endif
         {
-            S8_String cc = is_cpp ? "clang++" : "clang";
+            S8_String cc = "clang";
 
             Array<S8_String> flags = {scratch};
             flags += "-g -Wno-write-strings";
             flags += "-fdiagnostics-absolute-paths";
-            flags += "-fsanitize=address";
+            flags += "-fno-exceptions";
+            if (is_cpp) flags += "-fno-rtti";
+            if (is_cpp) flags += "-fsanitize=address";
             if (is_cpp) flags += "-std=c++11";
             flags += Fmt("-o %.*s", S8_Expand(exe));
 
@@ -69,10 +71,12 @@ int main(int argc, char **argv) {
         }
 #if OS_LINUX
         {
-            S8_String cc = is_cpp ? "g++" : "gcc";
+            S8_String cc = "gcc";
             Array<S8_String> flags = {scratch};
             flags += "-g -Wno-write-strings";
             flags += "-fsanitize=address";
+            if (is_cpp) flags += "-fno-exceptions";
+            if (is_cpp) flags += "-fno-rtti";
             if (is_cpp) flags += "-std=c++11";
             flags += Fmt("-o %.*s", S8_Expand(exe));
 
