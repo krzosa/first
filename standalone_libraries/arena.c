@@ -130,7 +130,7 @@ MA_API void *MA_PushSizeNonZeroed(MA_Arena *a, size_t size) {
 
     uint8_t *result = a->memory.data + aligned_len;
     a->len += size_with_alignment;
-    MA_Assertf(a->len <= a->memory.commit, "Reached commit boundary! reserve: %zu commit: %zu len: %zu size_with_alignment: %zu", a->memory.reserve, a->memory.commit, a->len, size_with_alignment);
+    MA_Assertf(a->len <= a->memory.commit, "Reached commit boundary! reserve: %zu commit: %zu len: %zu base_len: %zu alignment: %d size_with_alignment: %zu", a->memory.reserve, a->memory.commit, a->len, a->base_len, a->alignment, size_with_alignment);
     ASAN_UNPOISON_MEMORY_REGION(result, size);
     return (void *)result;
 }
