@@ -107,12 +107,18 @@ MA_API void MA_SaveSourceLocEx(const char *file, int line);
 #define MA_PushSizeNonZeroed(a, size) (MA_SaveSourceLoc(), MA__PushSizeNonZeroed(a, size))
 #define MA_PushCopy(a, p, size) (MA_SaveSourceLoc(), MA__PushCopy(a, p, size))
 #define MA_PushStringCopy(a, p, size) (MA_SaveSourceLoc(), MA__PushStringCopy(a, p, size))
+
+#define M_Alloc(a, size) (MA_SaveSourceLoc(), M__Alloc(a, size))
+#define M_AllocNonZeroed(a, size) (MA_SaveSourceLoc(), M__AllocNonZeroed(a, size))
+#define M_AllocCopy(a, p, size) (MA_SaveSourceLoc(), M__AllocCopy(a, p, size))
+#define M_Realloc(a, p, size, old_size) (MA_SaveSourceLoc(), M__Realloc(a, p, size, old_size))
+#define M_Dealloc(a, p) (MA_SaveSourceLoc(), M__Dealloc(a, p))
+
 #define MA_PushArrayNonZeroed(a, T, c) (T *)MA__PushSizeNonZeroed(a, sizeof(T) * (c))
 #define MA_PushStructNonZeroed(a, T) (T *)MA__PushSizeNonZeroed(a, sizeof(T))
 #define MA_PushStruct(a, T) (T *)MA__PushSize(a, sizeof(T))
 #define MA_PushArray(a, T, c) (T *)MA__PushSize(a, sizeof(T) * (c))
 #define MA_PushStructCopy(a, T, p) (T *)MA__PushCopy(a, (p), sizeof(T))
-#define MA_CheckpointScope(name, InArena) for (MA_Checkpoint name = MA_Save(InArena); name.arena; (MA_Load(name), name.arena = 0))
 
 #define M_AllocStruct(a, T) (T *)M_Alloc((a), sizeof(T))
 #define M_AllocArray(a, T, c) (T *)M_Alloc((a), sizeof(T) * (c))
@@ -167,16 +173,18 @@ MA_API bool            MV_Commit(MV_Memory *m, size_t commit);
 MA_API void            MV_Deallocate(MV_Memory *m);
 MA_API bool            MV_DecommitPos(MV_Memory *m, size_t pos);
 
-MA_API void *          M_AllocNonZeroed(M_Allocator allocator, size_t size);
-MA_API void *          M_Alloc(M_Allocator allocator, size_t size);
-MA_API void *          M_AllocCopy(M_Allocator allocator, void *p, size_t size);
-MA_API void *          M_ReallocNonZeroed(M_Allocator allocator, void *p, size_t size, size_t old_size);
-MA_API void            M_Dealloc(M_Allocator allocator, void *p);
+MA_API void *          M__AllocNonZeroed(M_Allocator allocator, size_t size);
+MA_API void *          M__Alloc(M_Allocator allocator, size_t size);
+MA_API void *          M__AllocCopy(M_Allocator allocator, void *p, size_t size);
+MA_API void *          M__Realloc(M_Allocator allocator, void *p, size_t size, size_t old_size);
+MA_API void            M__Dealloc(M_Allocator allocator, void *p);
 
 MA_API M_Allocator     M_GetSystemAllocator(void);
 MA_API M_Allocator     MA_GetExclusiveAllocator(MA_Arena *arena);
 MA_API M_Allocator     MA_GetAllocator(MA_Arena *arena);
 // clang-format on
+
+#define MA_CheckpointScope(name, InArena) for (MA_Checkpoint name = MA_Save(InArena); name.arena; (MA_Load(name), name.arena = 0))
 
 #ifndef MA_DISABLE_SCRATCH
 extern MA_THREAD_LOCAL MA_Arena MA_ScratchArenaPool[];

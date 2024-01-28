@@ -242,28 +242,28 @@ MA_API void MA_Load(MA_Checkpoint checkpoint) {
     MA_PopToPos(checkpoint.arena, checkpoint.pos);
 }
 
-MA_API void *M_AllocNonZeroed(M_Allocator allocator, size_t size) {
+MA_API void *M__AllocNonZeroed(M_Allocator allocator, size_t size) {
     void *p = allocator.p(allocator.obj, M_AllocatorOp_Allocate, NULL, size, 0);
     return p;
 }
 
-MA_API void *M_Alloc(M_Allocator allocator, size_t size) {
+MA_API void *M__Alloc(M_Allocator allocator, size_t size) {
     void *p = allocator.p(allocator.obj, M_AllocatorOp_Allocate, NULL, size, 0);
     MA_MemoryZero(p, size);
     return p;
 }
 
-MA_API void *M_AllocCopy(M_Allocator allocator, void *p, size_t size) {
-    void *copy_buffer = M_AllocNonZeroed(allocator, size);
+MA_API void *M__AllocCopy(M_Allocator allocator, void *p, size_t size) {
+    void *copy_buffer = M__AllocNonZeroed(allocator, size);
     MA_MemoryCopy(copy_buffer, p, size);
     return copy_buffer;
 }
 
-MA_API void M_Dealloc(M_Allocator allocator, void *p) {
+MA_API void M__Dealloc(M_Allocator allocator, void *p) {
     allocator.p(allocator.obj, M_AllocatorOp_Deallocate, p, 0, 0);
 }
 
-MA_API void *M_ReallocNonZeroed(M_Allocator allocator, void *p, size_t size, size_t old_size) {
+MA_API void *M__Realloc(M_Allocator allocator, void *p, size_t size, size_t old_size) {
     void *result = allocator.p(allocator.obj, M_AllocatorOp_Reallocate, p, size, old_size);
     // @todo: add old_size? because we can't zero
     return result;
