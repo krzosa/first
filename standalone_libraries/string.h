@@ -1,5 +1,5 @@
-#pragma once
-#define S8_HEADER
+#ifndef FIRST_S8_STRING
+#define FIRST_S8_STRING
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -32,7 +32,7 @@ struct S8_String {
     S8_String(char *s, int64_t l) : str(s), len(l) {}
     S8_String(const char *s) : str((char *)s), len(S8_Length((char *)s)) {}
     S8_String(const char *s, int64_t l) : str((char *)s), len(l) {}
-    #if defined(UTF_HEADER)
+    #if defined(FIRST_UTF_HEADER)
     struct Iter {
         UTF8_Iter i;
 
@@ -47,7 +47,7 @@ struct S8_String {
 
     Iter begin() { return {UTF8_IterateEx(str, (int)len)}; }
     Iter end() { return {}; }
-    #endif // UTF_HEADER
+    #endif // FIRST_UTF_HEADER
 #endif     // __cplusplus
 };
 
@@ -191,4 +191,5 @@ S8_API S8_String S8_FromWidechar(S8_Allocator allocator, wchar_t *wstring);
 inline S8_String operator""_s(const char *str, size_t size) { return {(char *)str, (int64_t)size}; }
 inline bool operator==(S8_String a, S8_String b) { return S8_AreEqual(a, b, 0); }
 inline bool operator!=(S8_String a, S8_String b) { return !S8_AreEqual(a, b, 0); }
+#endif
 #endif

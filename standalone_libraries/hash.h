@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FIRST_HASH_HEADER
+#define FIRST_HASH_HEADER
 #include <stdint.h>
 
 #ifndef HASH_API_FUNCTION
@@ -24,3 +25,4 @@ HASH_API_FUNCTION uint64_t HashMix(uint64_t x, uint64_t y);
 
 #define WRAP_AROUND_POWER_OF_2(x, pow2) (((x) & ((pow2)-1llu)))
 static inline float GetRandomNormalF(RandomSeed *series) { return (float)GetRandomNormal(series); }
+#endif

@@ -1,5 +1,5 @@
-#pragma once
-#define DEFER_HEADER
+#ifndef FIRST_DEFER_HEADER
+#define FIRST_DEFER_HEADER
 
 template <typename T>
 struct DEFER_ExitScope {
@@ -21,3 +21,5 @@ class DEFER_ExitScopeHelp {
 #define DEFER_CONCAT_INTERNAL(x, y) x##y
 #define DEFER_CONCAT(x, y) DEFER_CONCAT_INTERNAL(x, y)
 #define defer const auto DEFER_CONCAT(defer__, __LINE__) = DEFER_ExitScopeHelp() + [&]()
+
+#endif

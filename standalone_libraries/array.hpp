@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FIRST_ARRAY_HEADER
+#define FIRST_ARRAY_HEADER
 
 #ifndef ARRAY_REALLOCATE
     #include <stdlib.h>
@@ -33,7 +34,7 @@
 //         if (it == 4) ForArrayRemovableDeclare();
 //     }
 //
-#ifdef DEFER_HEADER
+#ifdef FIRST_DEFER_HEADER
     #define ForArrayRemovable(a) for (int __i = 0; __i < (a).len; __i += 1)
     #define ForArrayRemovablePrepare(a) \
         auto &it = (a)[__i];            \
@@ -48,7 +49,7 @@
 #endif
 
 #ifndef For
-    #define For2(it, array) for(auto &it : (array))
+    #define For2(it, array) for (auto &it : (array))
     #define For(array) For2(it, array)
 #endif
 
@@ -301,3 +302,5 @@ struct Array {
         }
     }
 };
+
+#endif

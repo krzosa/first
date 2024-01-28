@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FIRST_ENV_HEADER
+#define FIRST_ENV_HEADER
 #ifndef _CRT_SECURE_NO_WARNINGS
     #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -116,3 +117,4 @@
 //     #pragma clang diagnostic push
 //     #pragma clang diagnostic ignored "-Wmicrosoft-enum-forward-reference"
 // #endif
+#endif

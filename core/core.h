@@ -1,4 +1,6 @@
-#pragma once
+#ifndef FIRST_CORE_HEADER
+#define FIRST_CORE_HEADER
+
 #include "../standalone_libraries/preproc_env.h"
 #include "../standalone_libraries/stb_sprintf.h"
 #include "../standalone_libraries/io.h"
@@ -28,4 +30,6 @@
     #define ARRAY_SET_DEFAULT_ALLOCATOR \
         if (!allocator.p) allocator = M_GetSystemAllocator();
     #include "../standalone_libraries/array.hpp"
+#endif
+
 #endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FIRST_LL_HEADER
+#define FIRST_LL_HEADER
 #define SLL_QUEUE_ADD_MOD(f, l, n, next) \
     do {                                 \
         (n)->next = 0;                   \
@@ -123,3 +124,4 @@
     } while (0)
 #define DLL_INSERT_NEXT(base, new) DLL_INSERT_NEXT_MOD(base, new, next, prev)
 #define DLL_INSERT_PREV(base, new) DLL_INSERT_NEXT_MOD(base, new, next, prev)
+#endif

@@ -530,7 +530,7 @@ S8_API S8_String S8_AddF(S8_Allocator allocator, S8_List *list, const char *str,
     return result;
 }
 
-#ifdef UTF_HEADER
+#ifdef FIRST_UTF_HEADER
 
 S8_API S16_String S8_ToWidecharEx(S8_Allocator allocator, S8_String string) {
     S8_ASSERT(sizeof(wchar_t) == 2);

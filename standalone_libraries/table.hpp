@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FIRST_TABLE_HEADER
+#define FIRST_TABLE_HEADER
 #include <stdint.h>
 /*
     Hash table implementation:
@@ -20,7 +21,7 @@
 #endif
 
 #ifndef TABLE_Allocator
-#define TABLE_Allocator void *
+    #define TABLE_Allocator void *
 #endif
 
 #ifndef TABLE_ALLOCATE
@@ -62,7 +63,7 @@ TABLE_PRIVATE_FUNCTION uint64_t TABLE__HashBytes(void *data, unsigned size) {
 
 TABLE_PRIVATE_FUNCTION int TABLE_CStringLen(char *str) {
     int i = 0;
-    while(str[i]) i += 1;
+    while (str[i]) i += 1;
     return i;
 }
 
@@ -222,7 +223,7 @@ struct Table {
         return get(hash, default_value);
     }
 
-    #ifdef S8_HEADER
+#ifdef FIRST_S8_HEADER
     Value *get(S8_String s) {
         uint64_t hash = TABLE_HASH_BYTES(s.str, (unsigned)s.len);
         return get(hash);
@@ -237,7 +238,7 @@ struct Table {
         uint64_t hash = TABLE_HASH_BYTES(s.str, (unsigned)s.len);
         insert(hash, value);
     }
-    #endif
+#endif
 
     void puts(char *str, const Value &value) {
         int len = TABLE_CStringLen(str);
@@ -260,3 +261,4 @@ struct Table {
         values = 0;
     }
 };
+#endif

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef FIRST_CL_HEADER
+#define FIRST_CL_HEADER
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -296,3 +298,5 @@ CL_INLINE bool CL_IsKeywordOrIdent(CL_Kind kind) {
     bool result = CL_IsKeyword(kind) || kind == CL_IDENTIFIER;
     return result;
 }
+
+#endif

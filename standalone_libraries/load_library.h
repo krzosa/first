@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FIRST_LIB_HEADER
+#define FIRST_LIB_HEADER
 typedef void *LIB_Library;
 
 LIB_Library LIB_LoadLibrary(char *str);
@@ -7,4 +8,5 @@ bool LIB_UnloadLibrary(LIB_Library lib);
 
 #ifndef LIB_EXPORT
     #define LIB_EXPORT __declspec(dllexport)
+#endif
 #endif

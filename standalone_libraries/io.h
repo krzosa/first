@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FIRST_IO_HEADER
+#define FIRST_IO_HEADER
 #include <stdbool.h>
 
 #ifndef IO_API
@@ -87,3 +88,4 @@ const int IO_KindWarningf = 2;
 
 #define IO_Printf(...) IO__Printf(IO_KindPrintf, __FILE__, __LINE__, __VA_ARGS__)
 #define IO_Warningf(...) IO__Printf(IO_KindWarningf, __FILE__, __LINE__, __VA_ARGS__)
+#endif
