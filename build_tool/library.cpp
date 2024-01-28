@@ -2,7 +2,7 @@
     #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#include "../core_library/core.c"
+#include "../core/core.c"
 
 #define CL_Allocator MA_Arena *
 #define CL_Allocate(a, s) MA_PushSizeNonZeroed(a, s)

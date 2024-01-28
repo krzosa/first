@@ -1,4 +1,4 @@
-#include "../core_library/core.cpp"
+#include "../core/core.cpp"
 #include "test_table.cpp"
 #include "test_array.cpp"
 #include "test_arena.cpp"

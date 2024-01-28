@@ -36,7 +36,7 @@ void TestLexDir(S8_String dir) {
 
 void TestClexer() {
     TestLexDir("../standalone_libraries");
-    TestLexDir("../core_library");
+    TestLexDir("../core");
     TestLexDir("../build_tool");
     TestLexDir("../tests");
 }
