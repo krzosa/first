@@ -40,6 +40,12 @@ MA_API void MA_MemoryCopy(void *dst, void *src, size_t size) {
     #define ASAN_UNPOISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
 #endif
 
+MA_THREAD_LOCAL MA_SourceLoc MA_SavedSourceLoc;
+MA_API void MA_SaveSourceLocEx(const char *file, int line) {
+    MA_SavedSourceLoc.file = file;
+    MA_SavedSourceLoc.line = line;
+}
+
 MA_API size_t MA_GetAlignOffset(size_t size, size_t align) {
     size_t mask = align - 1;
     size_t val = size & mask;
@@ -110,7 +116,7 @@ MA_API uint8_t *MA_GetTop(MA_Arena *a) {
     return a->memory.data + a->len;
 }
 
-MA_API void *MA_PushSizeNonZeroed(MA_Arena *a, size_t size) {
+MA_API void *MA__PushSizeNonZeroed(MA_Arena *a, size_t size) {
     size_t align_offset = a->alignment ? MA_GetAlignOffset((uintptr_t)a->memory.data + (uintptr_t)a->len, a->alignment) : 0;
     size_t aligned_len = a->len + align_offset;
     size_t size_with_alignment = size + align_offset;
@@ -124,20 +130,43 @@ MA_API void *MA_PushSizeNonZeroed(MA_Arena *a, size_t size) {
 #endif
         }
         bool result = MV_Commit(&a->memory, size_with_alignment + MA_COMMIT_ADD_SIZE);
-        MA_Assertf(result, "Failed to commit memory more memory! reserve: %zu commit: %zu len: %zu size_with_alignment: %zu", a->memory.reserve, a->memory.commit, a->len, size_with_alignment);
+        MA_Assertf(result, "%s(%d): Failed to commit memory more memory! reserve: %zu commit: %zu len: %zu size_with_alignment: %zu", MA_SavedSourceLoc.file, MA_SavedSourceLoc.line, a->memory.reserve, a->memory.commit, a->len, size_with_alignment);
         (void)result;
     }
 
     uint8_t *result = a->memory.data + aligned_len;
     a->len += size_with_alignment;
-    MA_Assertf(a->len <= a->memory.commit, "Reached commit boundary! reserve: %zu commit: %zu len: %zu base_len: %zu alignment: %d size_with_alignment: %zu", a->memory.reserve, a->memory.commit, a->len, a->base_len, a->alignment, size_with_alignment);
+    MA_Assertf(a->len <= a->memory.commit, "%s(%d): Reached commit boundary! reserve: %zu commit: %zu len: %zu base_len: %zu alignment: %d size_with_alignment: %zu", MA_SavedSourceLoc.file, MA_SavedSourceLoc.line, a->memory.reserve, a->memory.commit, a->len, a->base_len, a->alignment, size_with_alignment);
     ASAN_UNPOISON_MEMORY_REGION(result, size);
     return (void *)result;
 }
 
-MA_API void *MA_PushSize(MA_Arena *arena, size_t size) {
-    void *result = MA_PushSizeNonZeroed(arena, size);
+MA_API void *MA__PushSize(MA_Arena *arena, size_t size) {
+    void *result = MA__PushSizeNonZeroed(arena, size);
     MA_MemoryZero(result, size);
+    return result;
+}
+
+MA_API char *MA__PushStringCopy(MA_Arena *arena, char *p, size_t size) {
+    char *copy_buffer = (char *)MA__PushSizeNonZeroed(arena, size + 1);
+    MA_MemoryCopy(copy_buffer, p, size);
+    copy_buffer[size] = 0;
+    return copy_buffer;
+}
+
+MA_API void *MA__PushCopy(MA_Arena *arena, void *p, size_t size) {
+    void *copy_buffer = MA__PushSizeNonZeroed(arena, size);
+    MA_MemoryCopy(copy_buffer, p, size);
+    return copy_buffer;
+}
+
+MA_API MA_Arena MA_PushArena(MA_Arena *arena, size_t size) {
+    MA_Arena result;
+    MA_MemoryZero(&result, sizeof(result));
+    result.memory.data = MA_PushArrayNonZeroed(arena, uint8_t, size);
+    result.memory.commit = size;
+    result.memory.reserve = size;
+    result.alignment = arena->alignment;
     return result;
 }
 
@@ -194,34 +223,11 @@ MA_API MA_Arena MA_Create() {
     return arena;
 }
 
-MA_API char *MA_PushStringCopy(MA_Arena *arena, char *p, size_t size) {
-    char *copy_buffer = (char *)MA_PushSizeNonZeroed(arena, size + 1);
-    MA_MemoryCopy(copy_buffer, p, size);
-    copy_buffer[size] = 0;
-    return copy_buffer;
-}
-
-MA_API void *MA_PushCopy(MA_Arena *arena, void *p, size_t size) {
-    void *copy_buffer = MA_PushSizeNonZeroed(arena, size);
-    MA_MemoryCopy(copy_buffer, p, size);
-    return copy_buffer;
-}
-
 MA_API bool MA_IsPointerInside(MA_Arena *arena, void *p) {
     uintptr_t pointer = (uintptr_t)p;
     uintptr_t start = (uintptr_t)arena->memory.data;
     uintptr_t stop = start + (uintptr_t)arena->len;
     bool result = pointer >= start && pointer < stop;
-    return result;
-}
-
-MA_API MA_Arena MA_PushArena(MA_Arena *arena, size_t size) {
-    MA_Arena result;
-    MA_MemoryZero(&result, sizeof(result));
-    result.memory.data = MA_PushArrayNonZeroed(arena, uint8_t, size);
-    result.memory.commit = size;
-    result.memory.reserve = size;
-    result.alignment = arena->alignment;
     return result;
 }
 
@@ -283,11 +289,11 @@ MA_StaticFunc void *M_ClibAllocatorProc(void *allocator, M_AllocatorOp kind, voi
 
 MA_API void *MA_AllocatorProc(void *allocator, M_AllocatorOp kind, void *p, size_t size, size_t old_size) {
     if (kind == M_AllocatorOp_Allocate) {
-        return MA_PushSizeNonZeroed((MA_Arena *)allocator, size);
+        return MA__PushSizeNonZeroed((MA_Arena *)allocator, size);
     }
 
     else if (kind == M_AllocatorOp_Reallocate) {
-        void *new_p = MA_PushSizeNonZeroed((MA_Arena *)allocator, size);
+        void *new_p = MA__PushSizeNonZeroed((MA_Arena *)allocator, size);
         MA_MemoryCopy(new_p, p, old_size);
         return new_p;
     }
@@ -305,7 +311,7 @@ MA_API void *MA_ExclusiveAllocatorProc(void *allocator, M_AllocatorOp kind, void
     if (kind == M_AllocatorOp_Reallocate) {
         if (size > old_size) {
             size_t size_to_push = size - old_size;
-            void *result = MA_PushSizeNonZeroed(arena, size_to_push);
+            void *result = MA__PushSizeNonZeroed(arena, size_to_push);
             if (!p) p = result;
             return p;
         }

@@ -13,6 +13,7 @@ typedef struct MV_Memory MV_Memory;
 typedef struct MA_Checkpoint MA_Checkpoint;
 typedef struct MA_Arena MA_Arena;
 typedef struct M_Allocator M_Allocator;
+typedef struct MA_SourceLoc MA_SourceLoc;
 
 #ifndef MA_DEFAULT_RESERVE_SIZE
     #define MA_DEFAULT_RESERVE_SIZE MA_GIB(1)
@@ -93,15 +94,30 @@ struct MA_Checkpoint {
     size_t pos;
 };
 
-#define MA_PushArrayNonZeroed(a, T, c) (T *)MA_PushSizeNonZeroed(a, sizeof(T) * (c))
-#define MA_PushStructNonZeroed(a, T) (T *)MA_PushSizeNonZeroed(a, sizeof(T))
-#define MA_PushStruct(a, T) (T *)MA_PushSize(a, sizeof(T))
-#define MA_PushArray(a, T, c) (T *)MA_PushSize(a, sizeof(T) * (c))
-#define MA_PushStructCopy(a, T, p) (T *)MA_PushCopy(a, (p), sizeof(T))
+struct MA_SourceLoc {
+    const char *file;
+    int line;
+};
+
+extern MA_THREAD_LOCAL MA_SourceLoc MA_SavedSourceLoc;
+#define MA_SaveSourceLoc() MA_SaveSourceLocEx(__FILE__, __LINE__)
+MA_API void MA_SaveSourceLocEx(const char *file, int line);
+
+#define MA_PushSize(a, size) (MA_SaveSourceLoc(), MA__PushSize(a, size))
+#define MA_PushSizeNonZeroed(a, size) (MA_SaveSourceLoc(), MA__PushSizeNonZeroed(a, size))
+#define MA_PushCopy(a, p, size) (MA_SaveSourceLoc(), MA__PushCopy(a, p, size))
+#define MA_PushStringCopy(a, p, size) (MA_SaveSourceLoc(), MA__PushStringCopy(a, p, size))
+#define MA_PushArrayNonZeroed(a, T, c) (T *)MA__PushSizeNonZeroed(a, sizeof(T) * (c))
+#define MA_PushStructNonZeroed(a, T) (T *)MA__PushSizeNonZeroed(a, sizeof(T))
+#define MA_PushStruct(a, T) (T *)MA__PushSize(a, sizeof(T))
+#define MA_PushArray(a, T, c) (T *)MA__PushSize(a, sizeof(T) * (c))
+#define MA_PushStructCopy(a, T, p) (T *)MA__PushCopy(a, (p), sizeof(T))
 #define MA_CheckpointScope(name, InArena) for (MA_Checkpoint name = MA_Save(InArena); name.arena; (MA_Load(name), name.arena = 0))
 
 #define M_AllocStruct(a, T) (T *)M_Alloc((a), sizeof(T))
 #define M_AllocArray(a, T, c) (T *)M_Alloc((a), sizeof(T) * (c))
+#define M_AllocStructNonZeroed(a, T) (T *)M_AllocNonZeroed((a), sizeof(T))
+#define M_AllocArrayNonZeroed(a, T, c) (T *)M_AllocNonZeroed((a), sizeof(T) * (c))
 #define M_AllocStructCopy(a, T, p) (T *)M_PushCopy(a, (p), sizeof(T))
 
 #define MA_IS_POW2(x) (((x) & ((x)-1)) == 0)
@@ -124,10 +140,10 @@ MA_API MA_Arena *      MA_Bootstrap(void);
 MA_API M_Allocator     MA_BootstrapExclusive(void);
 MA_API MA_Arena        MA_PushArena(MA_Arena *arena, size_t size);
 
-MA_API void *          MA_PushSizeNonZeroed(MA_Arena *a, size_t size);
-MA_API void *          MA_PushSize(MA_Arena *arena, size_t size);
-MA_API char *          MA_PushStringCopy(MA_Arena *arena, char *p, size_t size);
-MA_API void *          MA_PushCopy(MA_Arena *arena, void *p, size_t size);
+MA_API void *          MA__PushSizeNonZeroed(MA_Arena *a, size_t size);
+MA_API void *          MA__PushSize(MA_Arena *arena, size_t size);
+MA_API char *          MA__PushStringCopy(MA_Arena *arena, char *p, size_t size);
+MA_API void *          MA__PushCopy(MA_Arena *arena, void *p, size_t size);
 MA_API MA_Checkpoint   MA_Save(MA_Arena *arena);
 MA_API void            MA_Load(MA_Checkpoint checkpoint);
 
