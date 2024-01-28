@@ -3,7 +3,8 @@
    leeway for big buffers and other such things. Just make sure to not relay on it because it's easier unless specified.
 - Not sure if we should assume that strings should use allocators or arenas, for now it's arenas because I don't have other use cases
 @todo
-- Remove static buffers from filesystem, use scratch arenas instead?
+- Add file, line info to Arenas!
+- Remove static buffers from filesystem, use scratch arenas, more secure, data corruption instead of control flow corruption
 - Use allocators instead of concrete Arenas
 - Add proper string arrays and utilities for build files
     - also add String Arrays and String Builder, temp allocators hook ins for nicer api
@@ -15,7 +16,7 @@
 #define IO_VSNPRINTF stbsp_vsnprintf
 #define IO_SNPRINTF stbsp_snprintf
 #include "../standalone_libraries/io.c"
-#define MA_ASSERT(x) IO_Assert(x)
+#define MA_Assertf(x, ...) IO_Assertf(x, __VA_ARGS__)
 #include "../standalone_libraries/arena.c"
 #define RE_ASSERT(x) IO_Assert(x)
 #include "../standalone_libraries/regex.c"

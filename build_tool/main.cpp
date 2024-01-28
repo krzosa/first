@@ -29,6 +29,9 @@ int main(int argument_count, char **arguments) {
 
         if (build_file.str == 0) {
             IO_Printf("Couldnt find build file in current dir: %.*s, exiting ... \n", S8_Expand(working_dir));
+            IO_Printf("- Proper build file contains 'build_file.c' in it's name\n");
+            IO_Printf("- Alternative compiler can be chosen like this: bld cc=clang\n");
+            IO_Printf("- Cache can be cleared like this: bld clear_cache\n");
             return 0;
         }
     }
@@ -42,14 +45,28 @@ int main(int argument_count, char **arguments) {
         double time = OS_GetTime();
         int result = 0;
         if (cc == "cl") {
-            result = OS_SystemF("cl %.*s -Fe:%.*s -WX -W3 -wd4200 -diagnostics:column -nologo -Zi", S8_Expand(build_file), S8_Expand(exe_name));
+            Array<S8_String> flags = {Perm};
+            flags += "-nologo -Zi";
+            flags += "-WX -W3 -wd4200 -diagnostics:column";
+            flags += Fmt("/Fe:%.*s", S8_Expand(exe_name));
+            result = Run(cc + build_file + flags);
         }
         else if (cc == "clang") {
-            result = OS_SystemF("clang++ -std=c++11 -fdiagnostics-absolute-paths -Wno-writable-strings %.*s -o %.*s -g", S8_Expand(build_file), S8_Expand(exe_name));
+            Array<S8_String> flags = {Perm};
+            flags += "-std=c++11 -g";
+            flags += "-fdiagnostics-absolute-paths";
+            flags += "-Wno-writable-strings";
+            flags += Fmt("-o %.*s", S8_Expand(exe_name));
+            result = Run(cc + build_file + flags);
         }
         else {
             IO_Assert(cc == "gcc");
-            result = OS_SystemF("g++ -Wno-write-strings %.*s -o %.*s -g", S8_Expand(build_file), S8_Expand(exe_name));
+
+            Array<S8_String> flags = {Perm};
+            flags += "-std=c++11 -g";
+            flags += "-Wno-write-strings";
+            flags += Fmt("-o %.*s", S8_Expand(exe_name));
+            result = Run(cc + build_file + flags);
         }
 
         if (result != 0) {
@@ -60,12 +77,10 @@ int main(int argument_count, char **arguments) {
         IO_Printf("TIME Build file compilation: %f\n", time);
     }
 
-    S8_String cmdline_args = Merge(cmd);
-
     // Run the build file
     double time = OS_GetTime();
     if (build_file.str) {
-        int result = OS_SystemF(IF_WINDOWS_ELSE("", "./") "%.*s %.*s", S8_Expand(exe_name), S8_Expand(cmdline_args));
+        int result = Run(exe_name + cmd);
         if (result != 0) {
             IO_Printf("FAILED execution of the build file!\n");
             return 1;

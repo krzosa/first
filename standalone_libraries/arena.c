@@ -1,7 +1,7 @@
 #include "arena.h"
-#ifndef MA_ASSERT
+#ifndef MA_Assertf
     #include <assert.h>
-    #define MA_ASSERT(x) assert(x)
+    #define MA_Assertf(x, ...) assert(x)
 #endif
 
 #ifndef MA_MemoryZero
@@ -65,7 +65,7 @@ MA_StaticFunc uint8_t *MV__AdvanceCommit(MV_Memory *m, size_t *commit_size, size
     size_t to_be_total_commited_size = aligned_up_commit + m->commit;
     size_t to_be_total_commited_size_clamped_to_reserve = MA_CLAMP_TOP(to_be_total_commited_size, m->reserve);
     size_t adjusted_to_boundary_commit = to_be_total_commited_size_clamped_to_reserve - m->commit;
-    MA_ASSERT(adjusted_to_boundary_commit && "Reached the virtual memory reserved boundary");
+    MA_Assertf(adjusted_to_boundary_commit, "Reached the virtual memory reserved boundary");
     *commit_size = adjusted_to_boundary_commit;
 
     if (adjusted_to_boundary_commit == 0) {
@@ -76,7 +76,7 @@ MA_StaticFunc uint8_t *MV__AdvanceCommit(MV_Memory *m, size_t *commit_size, size
 }
 
 MA_API void MA_PopToPos(MA_Arena *arena, size_t pos) {
-    MA_ASSERT(arena->len >= arena->base_len);
+    MA_Assertf(arena->len >= arena->base_len, "Bug: arena->len shouldn't ever be smaller then arena->base_len");
     pos = MA_CLAMP(pos, arena->base_len, arena->len);
     size_t size = arena->len - pos;
     arena->len = pos;
@@ -106,7 +106,7 @@ MA_API void MA_SetAlignment(MA_Arena *arena, int alignment) {
 }
 
 MA_API uint8_t *MA_GetTop(MA_Arena *a) {
-    MA_ASSERT(a->memory.data); // arena needs to be inited
+    MA_Assertf(a->memory.data, "Arena needs to be inited, there is no top to get!");
     return a->memory.data + a->len;
 }
 
@@ -120,17 +120,17 @@ MA_API void *MA_PushSizeNonZeroed(MA_Arena *a, size_t size) {
 #if MA_ZERO_IS_INITIALIZATION
             MA_Init(a);
 #else
-            MA_ASSERT("Pushing on uninitialized arena");
+            MA_Assertf(0, "Pushing on uninitialized arena with zero initialization turned off");
 #endif
         }
         bool result = MV_Commit(&a->memory, size_with_alignment + MA_COMMIT_ADD_SIZE);
-        MA_ASSERT(result && "Failed to commit memory");
+        MA_Assertf(result, "Failed to commit memory more memory! reserve: %zu commit: %zu len: %zu size_with_alignment: %zu", a->memory.reserve, a->memory.commit, a->len, size_with_alignment);
         (void)result;
     }
 
     uint8_t *result = a->memory.data + aligned_len;
     a->len += size_with_alignment;
-    MA_ASSERT(a->len <= a->memory.commit);
+    MA_Assertf(a->len <= a->memory.commit, "Reached commit boundary! reserve: %zu commit: %zu len: %zu size_with_alignment: %zu", a->memory.reserve, a->memory.commit, a->len, size_with_alignment);
     ASAN_UNPOISON_MEMORY_REGION(result, size);
     return (void *)result;
 }
@@ -277,7 +277,7 @@ MA_StaticFunc void *M_ClibAllocatorProc(void *allocator, M_AllocatorOp kind, voi
         return MA_CRealloc(p, size);
     }
 
-    MA_ASSERT("MA_Arena invalid codepath");
+    MA_Assertf(0, "MA_Arena invalid codepath");
     return NULL;
 }
 
@@ -296,7 +296,7 @@ MA_API void *MA_AllocatorProc(void *allocator, M_AllocatorOp kind, void *p, size
         return NULL;
     }
 
-    MA_ASSERT("MA_Arena invalid codepath");
+    MA_Assertf(0, "MA_Arena invalid codepath");
     return NULL;
 }
 
@@ -316,7 +316,7 @@ MA_API void *MA_ExclusiveAllocatorProc(void *allocator, M_AllocatorOp kind, void
         return NULL;
     }
 
-    MA_ASSERT("MA_Arena invalid codepath");
+    MA_Assertf(0, "MA_Arena invalid codepath");
     return NULL;
 }
 
@@ -358,7 +358,7 @@ MA_API MA_Checkpoint MA_GetScratchEx(MA_Arena **conflicts, int conflict_count) {
         }
     }
 
-    MA_ASSERT(unoccupied);
+    MA_Assertf(unoccupied, "Failed to get free scratch memory, this is a fatal error, this shouldnt happen");
     MA_Checkpoint result = MA_Save(unoccupied);
     return result;
 }
@@ -390,7 +390,7 @@ MA_API MV_Memory MV_Reserve(size_t size) {
     MA_MemoryZero(&result, sizeof(result));
     size_t adjusted_size = MA_AlignUp(size, MV__WIN32_PAGE_SIZE);
     result.data = (uint8_t *)VirtualAlloc(0, adjusted_size, MEM_RESERVE, PAGE_READWRITE);
-    MA_ASSERT(result.data && "Failed to reserve virtual memory");
+    MA_Assertf(result.data, "Failed to reserve virtual memory");
     result.reserve = adjusted_size;
     return result;
 }
@@ -399,7 +399,7 @@ MA_API bool MV_Commit(MV_Memory *m, size_t commit) {
     uint8_t *pointer = MV__AdvanceCommit(m, &commit, MV__WIN32_PAGE_SIZE);
     if (pointer) {
         void *result = VirtualAlloc(pointer, commit, MEM_COMMIT, PAGE_READWRITE);
-        MA_ASSERT(result && "Failed to commit more memory");
+        MA_Assertf(result, "Failed to commit more memory");
         if (result) {
             m->commit += commit;
             return true;
@@ -410,7 +410,7 @@ MA_API bool MV_Commit(MV_Memory *m, size_t commit) {
 
 MA_API void MV_Deallocate(MV_Memory *m) {
     BOOL result = VirtualFree(m->data, 0, MEM_RELEASE);
-    MA_ASSERT(result != 0 && "Failed to release MV_Memory");
+    MA_Assertf(result != 0, "Failed to release MV_Memory");
 }
 
 MA_API bool MV_DecommitPos(MV_Memory *m, size_t pos) {
@@ -435,7 +435,7 @@ MA_API MV_Memory MV_Reserve(size_t size) {
     MV_Memory result = {};
     size_t size_aligned = MA_AlignUp(size, MV__UNIX_PAGE_SIZE);
     result.data = (uint8_t *)mmap(0, size_aligned, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    MA_ASSERT(result.data && "Failed to reserve memory using mmap!!");
+    MA_Assertf(result.data, "Failed to reserve memory using mmap!!");
     if (result.data) {
         result.reserve = size_aligned;
     }
@@ -446,7 +446,7 @@ MA_API bool MV_Commit(MV_Memory *m, size_t commit) {
     uint8_t *pointer = MV__AdvanceCommit(m, &commit, MV__UNIX_PAGE_SIZE);
     if (pointer) {
         int mprotect_result = mprotect(pointer, commit, PROT_READ | PROT_WRITE);
-        MA_ASSERT(mprotect_result == 0 && "Failed to commit more memory using mmap");
+        MA_Assertf(mprotect_result == 0, "Failed to commit more memory using mmap");
         if (mprotect_result == 0) {
             m->commit += commit;
             return true;
@@ -457,6 +457,6 @@ MA_API bool MV_Commit(MV_Memory *m, size_t commit) {
 
 MA_API void MV_Deallocate(MV_Memory *m) {
     int result = munmap(m->data, m->reserve);
-    MA_ASSERT(result == 0 && "Failed to release virtual memory using munmap");
+    MA_Assertf(result == 0, "Failed to release virtual memory using munmap");
 }
 #endif
