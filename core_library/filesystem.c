@@ -618,15 +618,17 @@ OS_API OS_Result OS_AppendFile(S8_String path, S8_String string) {
 }
 
 OS_API S8_String OS_ReadFile(MA_Arena *arena, S8_String path) {
-    // ftell returns insane size if file is a directory **on some machines** KEKW
+    S8_String result = {};
+
+    // ftell returns insane size if file is
+    // a directory **on some machines** KEKW
     if (OS_IsDir(path)) {
-        return {};
+        return result;
     }
 
     MA_Checkpoint scratch = MA_GetScratch1(arena);
     path = S8_Copy(scratch.arena, path);
 
-    S8_String result = {};
     FILE *f = fopen(path.str, "rb");
     if (f) {
         fseek(f, 0, SEEK_END);
