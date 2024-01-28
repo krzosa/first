@@ -20,8 +20,7 @@ int main() {
     TestBootstrapExclusive();
     TestBootstrapArenaClear();
 
-    // TestClexer();
-    // IO_Printf("TestClexer() - DONE\n");
+    TestClexer();
 
     // Unicode iteration over codepoints using For
     {
