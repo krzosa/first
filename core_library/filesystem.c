@@ -628,6 +628,7 @@ OS_API S8_String OS_ReadFile(MA_Arena *arena, S8_String path) {
         result.len = ftell(f);
         fseek(f, 0, SEEK_SET);
 
+        IO_Printf("Reading: %.*s, size: %lld\n", S8_Expand(path), result.len);
         result.str = (char *)MA_PushSizeNonZeroed(arena, result.len + 1);
         fread(result.str, result.len, 1, f);
         result.str[result.len] = 0;
