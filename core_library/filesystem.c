@@ -618,6 +618,11 @@ OS_API OS_Result OS_AppendFile(S8_String path, S8_String string) {
 }
 
 OS_API S8_String OS_ReadFile(MA_Arena *arena, S8_String path) {
+    // ftell returns insane size if file is a directory **on some machines** KEKW
+    if (OS_IsDir(path)) {
+        return {};
+    }
+
     MA_Checkpoint scratch = MA_GetScratch1(arena);
     path = S8_Copy(scratch.arena, path);
 
@@ -628,7 +633,6 @@ OS_API S8_String OS_ReadFile(MA_Arena *arena, S8_String path) {
         result.len = ftell(f);
         fseek(f, 0, SEEK_SET);
 
-        IO_Printf("Reading: %.*s, size: %lld\n", S8_Expand(path), result.len);
         result.str = (char *)MA_PushSizeNonZeroed(arena, result.len + 1);
         fread(result.str, result.len, 1, f);
         result.str[result.len] = 0;

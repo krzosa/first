@@ -12,11 +12,12 @@ void TestLexDir(S8_String dir) {
     char msg_buff[1024];
     for (OS_FileIter iter = OS_IterateFiles(scratch_filenames, dir); OS_IsValid(iter); OS_Advance(&iter)) {
         MA_Scratch scratch(scratch_filenames.checkpoint);
+        if (iter.is_directory) continue;
 
         S8_String file = OS_ReadFile(scratch, iter.absolute_path);
         if (!file.str) continue;
-        CL_Lexer lexer = CL_Begin(scratch, file.str, iter.absolute_path.str);
 
+        CL_Lexer lexer = CL_Begin(scratch, file.str, iter.absolute_path.str);
         for (int i = 0;; i += 1) {
             CL_Token token = CL_Next(&lexer);
             if (token.kind == CL_EOF) break;
