@@ -58,6 +58,7 @@ int main(int argument_count, char **arguments) {
             flags += "-Wno-writable-strings";
             flags += "-fno-exceptions";
             flags += "-fno-rtti";
+            flags += "-lm";
             flags += Fmt("-o %.*s", S8_Expand(exe_name));
             result = Run(cc + build_file + flags);
         }
@@ -69,6 +70,7 @@ int main(int argument_count, char **arguments) {
             flags += "-Wno-write-strings";
             flags += "-fno-exceptions";
             flags += "-fno-rtti";
+            flags += "-lm";
             flags += Fmt("-o %.*s", S8_Expand(exe_name));
             result = Run(cc + build_file + flags);
         }

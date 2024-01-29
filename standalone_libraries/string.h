@@ -2,6 +2,7 @@
 #define FIRST_S8_STRING
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdarg.h>
 
 #ifndef S8_API
     #define S8_API

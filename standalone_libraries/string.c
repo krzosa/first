@@ -328,7 +328,7 @@ S8_API S8_String S8_MergeWithSeparator(S8_Allocator allocator, S8_List list, S8_
     int64_t base_size = (list.char_count + 1);
     int64_t sep_size = (list.node_count - 1) * separator.len;
     int64_t size = base_size + sep_size;
-    char *buff = (char *)S8_ALLOCATE(allocator, sizeof(char) * size);
+    char *buff = (char *)S8_ALLOCATE(allocator, sizeof(char) * (size + 1));
     S8_String string = S8_Make(buff, 0);
     for (S8_Node *it = list.first; it; it = it->next) {
         S8_ASSERT(string.len + it->string.len <= size);

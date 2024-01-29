@@ -36,10 +36,8 @@ Array<S8_String> &operator+=(Array<S8_String> &a, S8_String s) {
 }
 
 //@todo: split on any whitespace instead!
-Array<S8_String> Split(char *str) {
-    S8_String s = S8_MakeFromChar(str);
-    S8_List list = S8_Split(Perm, s, S8_Lit(" "), 0);
-
+Array<S8_String> Split(S8_String s, S8_String sep = " ") {
+    S8_List list = S8_Split(Perm, s, sep, 0);
     Array<S8_String> result = {*Perm};
     S8_For(it, list) result.add(it->string);
     return result;
