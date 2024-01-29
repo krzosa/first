@@ -32,6 +32,7 @@ typedef enum IO_ErrorResult {
     #define IO__PrintfFormat(fmt, va)
 #endif
 
+typedef void IO_MessageHandler(int kind, const char *file, int line, char *str, int len);
 extern void (*IO_User_OutputMessage)(int kind, const char *file, int line, char *str, int len);
 
 #define IO__STRINGIFY(x) #x
@@ -83,8 +84,8 @@ IO_API IO_ErrorResult IO_OutputError(char *str, int len);
 IO_API void IO_Exit(int error_code);
 IO_API bool IO_IsDebuggerPresent(void);
 
-const int IO_KindPrintf = 1;
-const int IO_KindWarningf = 2;
+static const int IO_KindPrintf = 1;
+static const int IO_KindWarningf = 2;
 
 #define IO_Printf(...) IO__Printf(IO_KindPrintf, __FILE__, __LINE__, __VA_ARGS__)
 #define IO_Warningf(...) IO__Printf(IO_KindWarningf, __FILE__, __LINE__, __VA_ARGS__)

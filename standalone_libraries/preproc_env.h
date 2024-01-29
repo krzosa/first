@@ -113,8 +113,4 @@
     #error couldnt figure out OS
 #endif
 
-// #if COMPILER_CLANG
-//     #pragma clang diagnostic push
-//     #pragma clang diagnostic ignored "-Wmicrosoft-enum-forward-reference"
-// #endif
 #endif

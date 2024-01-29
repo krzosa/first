@@ -58,9 +58,9 @@ int main(int argc, char **argv) {
             Array<S8_String> flags = {scratch};
             flags += "-g -Wno-write-strings";
             flags += "-fdiagnostics-absolute-paths";
-            flags += "-fno-exceptions";
+            flags += "-fsanitize=address";
+            if (is_cpp) flags += "-fno-exceptions";
             if (is_cpp) flags += "-fno-rtti";
-            if (is_cpp) flags += "-fsanitize=address";
             if (is_cpp) flags += "-std=c++11";
             flags += Fmt("-o %.*s", S8_Expand(exe));
 

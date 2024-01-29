@@ -99,7 +99,7 @@ enum {
     S8_SplitFlag_SplitInclusive = 2,
 };
 
-const bool S8_IgnoreCase = true;
+static const bool S8_IgnoreCase = true;
 
 #if defined(__has_attribute)
     #if __has_attribute(format)
