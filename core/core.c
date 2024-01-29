@@ -12,8 +12,7 @@
 */
 
 #include "core.h"
-#define STB_SPRINTF_IMPLEMENTATION
-#include "../standalone_libraries/stb_sprintf.h"
+#include "../standalone_libraries/stb_sprintf.c"
 #define IO_VSNPRINTF stbsp_vsnprintf
 #define IO_SNPRINTF stbsp_snprintf
 #include "../standalone_libraries/io.c"
