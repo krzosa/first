@@ -78,7 +78,7 @@ S8_String Fmt(const char *str, ...) {
 }
 
 Array<S8_String> ListDir(char *dir) {
-    Array<S8_String> result = {};
+    Array<S8_String> result = {Perm};
     for (OS_FileIter it = OS_IterateFiles(Perm, S8_MakeFromChar(dir)); OS_IsValid(it); OS_Advance(&it)) {
         result.add(S8_Copy(Perm, it.absolute_path));
     }
@@ -87,12 +87,9 @@ Array<S8_String> ListDir(char *dir) {
 
 Array<S8_String> CMD_Make(char **argv, int argc) {
     Array<S8_String> result = {Perm};
-    if (argc > 1) IO_Printf("Command line arguments:\n");
     for (int i = 1; i < argc; i += 1) {
         S8_String it = S8_MakeFromChar(argv[i]);
         result.add(it);
-
-        IO_Printf("[%d] %.*s\n", i, S8_Expand(it));
     }
     return result;
 }

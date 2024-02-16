@@ -19,11 +19,6 @@ SRC_Cache *SRC_FromFileCache;
 S8_String SRC_CacheFilename;
 CL_SearchPaths SRC_SearchPaths = {}; // @todo;
 
-#define SRC_CacheScope(cache_filename) \
-    SRC_InitCache(Perm, cache_filename); \
-    defer { SRC_SaveCache(); };
-
-
 void SRC_InitCache(MA_Arena *arena, S8_String cachefilename) {
     SRC_CacheFilename = cachefilename;
 

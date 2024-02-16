@@ -36,7 +36,7 @@ int main(int argument_count, char **arguments) {
         }
     }
 
-    SRC_CacheScope("build_tool.cache");
+    SRC_InitCache(Perm, "build_tool.cache");
     S8_String name_no_ext = S8_GetNameNoExt(build_file);
     S8_String exe_name = S8_Format(Perm, "%.*s.exe", S8_Expand(name_no_ext));
 
@@ -93,6 +93,8 @@ int main(int argument_count, char **arguments) {
             return 1;
         }
     }
+
+    SRC_SaveCache();
     time = OS_GetTime() - time;
     IO_Printf("TIME total build file execution: %f\n", time);
 }
