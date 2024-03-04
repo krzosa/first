@@ -1,25 +1,31 @@
-enum CmdDeclKind {
+
+typedef enum {
     CmdDeclKind_Bool,
     CmdDeclKind_List,
     CmdDeclKind_Enum,
-};
+} CmdDeclKind;
 
+typedef struct CmdDecl CmdDecl;
 struct CmdDecl {
-    CmdDeclKind       kind;
-    S8_String         name;
-    S8_String         help;
+    CmdDecl    *next;
+    CmdDeclKind kind;
+    S8_String   name;
+    S8_String   help;
 
-    bool *            bool_result;
-    Array<S8_String> *list_result;
+    bool    *bool_result;
+    S8_List *list_result;
 
-    int *             enum_result;
-    const char **     enum_options;
-    int               enum_option_count;
-
+    int         *enum_result;
+    const char **enum_options;
+    int          enum_option_count;
 };
 
+typedef struct CmdParser CmdParser;
 struct CmdParser {
-    int            argc;
-    char **        argv;
-    Array<CmdDecl> decls;
+    int       argc;
+    char    **argv;
+    MA_Arena *arena;
+
+    CmdDecl  *fdecl;
+    CmdDecl  *ldecl;
 };

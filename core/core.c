@@ -19,9 +19,7 @@
 #include "../standalone_libraries/load_library.c"
 #include "filesystem.c"
 
-#if LANG_CPP
-#include "cmd.cpp"
-#endif
+#include "cmd.c"
 
 /*
 - I think it's okay to say that strings being null terminated should be mostly treated as NOT terminated but leave some

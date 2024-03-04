@@ -13,6 +13,7 @@
 #include "../standalone_libraries/multimedia.h"
 #include "../standalone_libraries/load_library.h"
 #include "filesystem.h"
+#include "cmd.h"
 
 #if LANG_CPP
     #include "../standalone_libraries/defer.hpp"
@@ -30,7 +31,6 @@
     #define ARRAY_SET_DEFAULT_ALLOCATOR \
         if (!allocator.p) allocator = M_GetSystemAllocator();
     #include "../standalone_libraries/array.hpp"
-    #include "cmd.h"
 #endif
 
 #endif
