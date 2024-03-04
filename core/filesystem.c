@@ -43,7 +43,7 @@ OS_API bool OS_IsAbsolute(S8_String path) {
 
 OS_API S8_String OS_GetExePath(MA_Arena *arena) {
     wchar_t wbuffer[1024];
-    DWORD wsize = GetModuleFileNameW(0, wbuffer, MA_LENGTHOF(wbuffer));
+    DWORD wsize = GetModuleFileNameW(0, wbuffer, MA_Lengthof(wbuffer));
     IO_Assert(wsize != 0);
 
     S8_String path = S8_FromWidecharEx(arena, wbuffer, wsize);
@@ -62,7 +62,7 @@ OS_API S8_String OS_GetExeDir(MA_Arena *arena) {
 
 OS_API S8_String OS_GetWorkingDir(MA_Arena *arena) {
     wchar_t wbuffer[1024];
-    DWORD wsize = GetCurrentDirectoryW(MA_LENGTHOF(wbuffer), wbuffer);
+    DWORD wsize = GetCurrentDirectoryW(MA_Lengthof(wbuffer), wbuffer);
     IO_Assert(wsize != 0);
     IO_Assert(wsize < 1022);
     wbuffer[wsize++] = '/';
@@ -75,15 +75,15 @@ OS_API S8_String OS_GetWorkingDir(MA_Arena *arena) {
 
 OS_API void OS_SetWorkingDir(S8_String path) {
     wchar_t wpath[1024];
-    UTF_CreateWidecharFromChar(wpath, MA_LENGTHOF(wpath), path.str, path.len);
+    UTF_CreateWidecharFromChar(wpath, MA_Lengthof(wpath), path.str, path.len);
     SetCurrentDirectoryW(wpath);
 }
 
 OS_API S8_String OS_GetAbsolutePath(MA_Arena *arena, S8_String relative) {
     wchar_t wpath[1024];
-    UTF_CreateWidecharFromChar(wpath, MA_LENGTHOF(wpath), relative.str, relative.len);
+    UTF_CreateWidecharFromChar(wpath, MA_Lengthof(wpath), relative.str, relative.len);
     wchar_t wpath_abs[1024];
-    DWORD written = GetFullPathNameW((wchar_t *)wpath, MA_LENGTHOF(wpath_abs), wpath_abs, 0);
+    DWORD written = GetFullPathNameW((wchar_t *)wpath, MA_Lengthof(wpath_abs), wpath_abs, 0);
     if (written == 0)
         return S8_MakeEmpty();
     S8_String path = S8_FromWidecharEx(arena, wpath_abs, written);
@@ -93,7 +93,7 @@ OS_API S8_String OS_GetAbsolutePath(MA_Arena *arena, S8_String relative) {
 
 OS_API bool OS_FileExists(S8_String path) {
     wchar_t wbuff[1024];
-    UTF_CreateWidecharFromChar(wbuff, MA_LENGTHOF(wbuff), path.str, path.len);
+    UTF_CreateWidecharFromChar(wbuff, MA_Lengthof(wbuff), path.str, path.len);
     DWORD attribs = GetFileAttributesW(wbuff);
     bool result = attribs == INVALID_FILE_ATTRIBUTES ? false : true;
     return result;
@@ -101,14 +101,14 @@ OS_API bool OS_FileExists(S8_String path) {
 
 OS_API bool OS_IsDir(S8_String path) {
     wchar_t wbuff[1024];
-    UTF_CreateWidecharFromChar(wbuff, MA_LENGTHOF(wbuff), path.str, path.len);
+    UTF_CreateWidecharFromChar(wbuff, MA_Lengthof(wbuff), path.str, path.len);
     DWORD dwAttrib = GetFileAttributesW(wbuff);
     return dwAttrib != INVALID_FILE_ATTRIBUTES && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY);
 }
 
 OS_API bool OS_IsFile(S8_String path) {
     wchar_t wbuff[1024];
-    UTF_CreateWidecharFromChar(wbuff, MA_LENGTHOF(wbuff), path.str, path.len);
+    UTF_CreateWidecharFromChar(wbuff, MA_Lengthof(wbuff), path.str, path.len);
     DWORD dwAttrib = GetFileAttributesW(wbuff);
     bool is_file = (dwAttrib & FILE_ATTRIBUTE_DIRECTORY) == 0;
     return dwAttrib != INVALID_FILE_ATTRIBUTES && is_file;
@@ -198,7 +198,7 @@ OS_API OS_FileIter OS_IterateFiles(MA_Arena *scratch_arena, S8_String path) {
 
 OS_API OS_Result OS_MakeDir(S8_String path) {
     wchar_t wpath[1024];
-    UTF_CreateWidecharFromChar(wpath, MA_LENGTHOF(wpath), path.str, path.len);
+    UTF_CreateWidecharFromChar(wpath, MA_Lengthof(wpath), path.str, path.len);
     BOOL success = CreateDirectoryW(wpath, NULL);
     OS_Result result = OS_SUCCESS;
     if (success == 0) {
@@ -218,10 +218,10 @@ OS_API OS_Result OS_MakeDir(S8_String path) {
 
 OS_API OS_Result OS_CopyFile(S8_String from, S8_String to, bool overwrite) {
     wchar_t wfrom[1024];
-    UTF_CreateWidecharFromChar(wfrom, MA_LENGTHOF(wfrom), from.str, from.len);
+    UTF_CreateWidecharFromChar(wfrom, MA_Lengthof(wfrom), from.str, from.len);
 
     wchar_t wto[1024];
-    UTF_CreateWidecharFromChar(wto, MA_LENGTHOF(wto), to.str, to.len);
+    UTF_CreateWidecharFromChar(wto, MA_Lengthof(wto), to.str, to.len);
 
     BOOL fail_if_exists = !overwrite;
     BOOL success = CopyFileW(wfrom, wto, fail_if_exists);
@@ -234,7 +234,7 @@ OS_API OS_Result OS_CopyFile(S8_String from, S8_String to, bool overwrite) {
 
 OS_API OS_Result OS_DeleteFile(S8_String path) {
     wchar_t wpath[1024];
-    UTF_CreateWidecharFromChar(wpath, MA_LENGTHOF(wpath), path.str, path.len);
+    UTF_CreateWidecharFromChar(wpath, MA_Lengthof(wpath), path.str, path.len);
     BOOL success = DeleteFileW(wpath);
     OS_Result result = OS_SUCCESS;
     if (success == 0)
@@ -268,7 +268,7 @@ OS_API OS_Result OS_DeleteDir(S8_String path, unsigned flags) {
     }
     else {
         wchar_t wpath[1024];
-        UTF_CreateWidecharFromChar(wpath, MA_LENGTHOF(wpath), path.str, path.len);
+        UTF_CreateWidecharFromChar(wpath, MA_Lengthof(wpath), path.str, path.len);
         BOOL success = RemoveDirectoryW(wpath);
         OS_Result result = OS_SUCCESS;
         if (success == 0)
@@ -280,7 +280,7 @@ OS_API OS_Result OS_DeleteDir(S8_String path, unsigned flags) {
 
 static OS_Result OS__WriteFile(S8_String path, S8_String data, bool append) {
     wchar_t wpath[1024];
-    UTF_CreateWidecharFromChar(wpath, MA_LENGTHOF(wpath), path.str, path.len);
+    UTF_CreateWidecharFromChar(wpath, MA_Lengthof(wpath), path.str, path.len);
     OS_Result result = OS_FAILURE;
 
     DWORD access = GENERIC_WRITE;
@@ -321,7 +321,7 @@ OS_API S8_String OS_ReadFile(MA_Arena *arena, S8_String path) {
     MA_Checkpoint checkpoint = MA_Save(arena);
 
     wchar_t wpath[1024];
-    UTF_CreateWidecharFromChar(wpath, MA_LENGTHOF(wpath), path.str, path.len);
+    UTF_CreateWidecharFromChar(wpath, MA_Lengthof(wpath), path.str, path.len);
     HANDLE handle = CreateFileW(wpath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (handle != INVALID_HANDLE_VALUE) {
         LARGE_INTEGER file_size;

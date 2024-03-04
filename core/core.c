@@ -1,16 +1,3 @@
-/*
-- I think it's okay to say that strings being null terminated should be mostly treated as NOT terminated but leave some
-   leeway for big buffers and other such things. Just make sure to not relay on it because it's easier unless specified.
-- Not sure if we should assume that strings should use allocators or arenas, for now it's arenas because I don't have other use cases
-@todo
-- Add compiler checking to make sure it's on the path and if it's not message
-- Add file, line info to Arenas!
-- Remove static buffers from filesystem, use scratch arenas, more secure, data corruption instead of control flow corruption
-- Use allocators instead of concrete Arenas
-- Add proper string arrays and utilities for build files
-    - also add String Arrays and String Builder, temp allocators hook ins for nicer api
-*/
-
 #include "core.h"
 #include "../standalone_libraries/stb_sprintf.c"
 #define IO_VSNPRINTF stbsp_vsnprintf
@@ -31,3 +18,15 @@
 #include "../standalone_libraries/hash.c"
 #include "../standalone_libraries/load_library.c"
 #include "filesystem.c"
+
+#if LANG_CPP
+#include "cmd.cpp"
+#endif
+
+/*
+- I think it's okay to say that strings being null terminated should be mostly treated as NOT terminated but leave some
+   leeway for big buffers and other such things. Just make sure to not relay on it because it's easier unless specified.
+- Not sure if we should assume that strings should use allocators or arenas, for now it's arenas because I don't have other use cases
+@todo
+- Remove static buffers from filesystem, use scratch arenas, more secure, data corruption instead of control flow corruption
+*/

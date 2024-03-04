@@ -30,6 +30,7 @@
     #define ARRAY_SET_DEFAULT_ALLOCATOR \
         if (!allocator.p) allocator = M_GetSystemAllocator();
     #include "../standalone_libraries/array.hpp"
+    #include "cmd.h"
 #endif
 
 #endif

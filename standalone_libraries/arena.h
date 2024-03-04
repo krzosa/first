@@ -129,7 +129,7 @@ MA_API void MA_SaveSourceLocEx(const char *file, int line);
 #define MA_IS_POW2(x) (((x) & ((x)-1)) == 0)
 #define MA_MIN(x, y) ((x) <= (y) ? (x) : (y))
 #define MA_MAX(x, y) ((x) >= (y) ? (x) : (y))
-#define MA_LENGTHOF(x) ((int64_t)((sizeof(x) / sizeof((x)[0]))))
+#define MA_Lengthof(x) ((int64_t)((sizeof(x) / sizeof((x)[0]))))
 
 #define MA_CLAMP_TOP(x, max) ((x) >= (max) ? (max) : (x))
 #define MA_CLAMP_BOT(x, min) ((x) <= (min) ? (min) : (x))

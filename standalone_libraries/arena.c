@@ -348,7 +348,7 @@ MA_THREAD_LOCAL MA_Arena MA_ScratchArenaPool[4];
 
 MA_API MA_Checkpoint MA_GetScratchEx(MA_Arena **conflicts, int conflict_count) {
     MA_Arena *unoccupied = 0;
-    for (int i = 0; i < MA_LENGTHOF(MA_ScratchArenaPool); i += 1) {
+    for (int i = 0; i < MA_Lengthof(MA_ScratchArenaPool); i += 1) {
         MA_Arena *from_pool = MA_ScratchArenaPool + i;
         unoccupied = from_pool;
         for (int conflict_i = 0; conflict_i < conflict_count; conflict_i += 1) {
