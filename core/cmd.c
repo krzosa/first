@@ -1,6 +1,6 @@
 
-CmdParser MakeCmdParser(MA_Arena *arena, int argc, char **argv) {
-    CmdParser result = {argc, argv, arena};
+CmdParser MakeCmdParser(MA_Arena *arena, int argc, char **argv, const char *custom_help) {
+    CmdParser result = {argc, argv, arena, custom_help};
     return result;
 }
 
@@ -54,8 +54,9 @@ S8_String StrEnumValues(MA_Arena *arena, CmdDecl *decl) {
 }
 
 void PrintCmdUsage(CmdParser *p) {
-    IO_Printf("\nhere are the supported commands:\n");
+    IO_Printf("%s\nCommands:\n", p->custom_help);
     for (CmdDecl *it = p->fdecl; it; it = it->next) {
+        IO_Printf("  ");
         if (it->kind == CmdDeclKind_List) {
             S8_String example = S8_Format(p->arena, "-%.*s a b c", S8_Expand(it->name));
             IO_Printf("%-30.*s %.*s\n", S8_Expand(example), S8_Expand(it->help));
@@ -72,7 +73,6 @@ void PrintCmdUsage(CmdParser *p) {
 
 bool InvalidCmdArg(CmdParser *p, S8_String arg) {
     IO_Printf("invalid command line argument: %.*s\n", S8_Expand(arg));
-    PrintCmdUsage(p);
     return false;
 }
 
@@ -97,7 +97,7 @@ bool ParseCmd(MA_Arena *arg_arena, CmdParser *p) {
             if (decl->kind == CmdDeclKind_Bool) {
                 *decl->bool_result = !*decl->bool_result;
             } else if (decl->kind == CmdDeclKind_Enum) {
-                if (i + 1 >= p->argc) { IO_Printf("expected at least 1 argument after %.*s\n", S8_Expand(arg)); PrintCmdUsage(p); return false; }
+                if (i + 1 >= p->argc) { IO_Printf("expected at least 1 argument after %.*s\n", S8_Expand(arg)); return false; }
                 S8_String option_from_cmd = S8_MakeFromChar(p->argv[++i]);
 
                 bool found_option = false;
@@ -113,18 +113,17 @@ bool ParseCmd(MA_Arena *arg_arena, CmdParser *p) {
                 if (!found_option) {
                     IO_Printf("expected one of the enum values: %.*s", S8_Expand(StrEnumValues(p->arena, decl)));
                     IO_Printf(" got instead: %.*s\n", S8_Expand(option_from_cmd));
-                    PrintCmdUsage(p);
                     return false;
                 }
 
             } else if (decl->kind == CmdDeclKind_List) {
-                if (i + 1 >= p->argc) { IO_Printf("expected at least 1 argument after %.*s\n", S8_Expand(arg)); PrintCmdUsage(p); return false; }
+                if (i + 1 >= p->argc) { IO_Printf("expected at least 1 argument after %.*s\n", S8_Expand(arg)); return false; }
 
                 i += 1;
                 for (int counter = 0; i < p->argc; i += 1, counter += 1) {
                     S8_String arg = S8_MakeFromChar(p->argv[i]);
                     if (arg.str[0] == '-') {
-                        if (counter == 0) { IO_Printf("expected at least 1 argument after %.*s\n", S8_Expand(arg)); PrintCmdUsage(p); return false; }
+                        if (counter == 0) { IO_Printf("expected at least 1 argument after %.*s\n", S8_Expand(arg)); return false; }
                         i -= 1;
                         break;
                     }
@@ -134,8 +133,20 @@ bool ParseCmd(MA_Arena *arg_arena, CmdParser *p) {
             } else IO_Todo();
 
         }
-        else return InvalidCmdArg(p, arg);
+        else {
+            if (p->require_one_standalone_arg && p->args.node_count == 0) {
+                S8_AddNode(arg_arena, &p->args, arg);
+            } else {
+                return InvalidCmdArg(p, arg);
+            }
+        }
     }
+
+    if (p->require_one_standalone_arg && p->args.node_count == 0) {
+        PrintCmdUsage(p);
+        return false;
+    }
+
     return true;
 }
 
@@ -165,7 +176,7 @@ void TestCmdParser() {
     const char *build_profiles[] = {"debug", "release"};
     int build_profiles_count = MA_Lengthof(build_profiles);
 
-    CmdParser p = MakeCmdParser(scratch.arena, argc, argv);
+    CmdParser p = MakeCmdParser(scratch.arena, argc, argv, "this is a test");
     AddBool(&p, &build_scratch, "build_scratch", "builds a sandbox where I experiment with things");
     AddList(&p, &test_list, "tests", "list of specific tests to run");
     AddList(&p, &test_things, "things", "list of things");

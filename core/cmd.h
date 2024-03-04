@@ -22,10 +22,14 @@ struct CmdDecl {
 
 typedef struct CmdParser CmdParser;
 struct CmdParser {
-    int       argc;
-    char    **argv;
-    MA_Arena *arena;
+    int         argc;
+    char      **argv;
+    MA_Arena   *arena;
+    const char *custom_help;
 
     CmdDecl  *fdecl;
     CmdDecl  *ldecl;
+
+    bool      require_one_standalone_arg;
+    S8_List   args;
 };
