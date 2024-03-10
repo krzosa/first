@@ -22,6 +22,22 @@ typedef enum IO_ErrorResult {
     #define IO_DebugBreak() (__builtin_trap(), 0)
 #endif
 
+#ifndef IO_THREAD_LOCAL
+    #if defined(__cplusplus) && __cplusplus >= 201103L
+        #define IO_THREAD_LOCAL thread_local
+    #elif defined(__GNUC__)
+        #define IO_THREAD_LOCAL __thread
+    #elif defined(_MSC_VER)
+        #define IO_THREAD_LOCAL __declspec(thread)
+    #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && !defined(__STDC_NO_THREADS__)
+        #define IO_THREAD_LOCAL _Thread_local
+    #elif defined(__TINYC__)
+        #define IO_THREAD_LOCAL _Thread_local
+    #else
+        #error Couldnt figure out thread local, needs to be provided manually
+    #endif
+#endif
+
 #if defined(__has_attribute)
     #if __has_attribute(format)
         #define IO__PrintfFormat(fmt, va) __attribute__((format(printf, fmt, va)))
@@ -33,7 +49,7 @@ typedef enum IO_ErrorResult {
 #endif
 
 typedef void IO_MessageHandler(int kind, const char *file, int line, char *str, int len);
-extern void (*IO_User_OutputMessage)(int kind, const char *file, int line, char *str, int len);
+extern IO_THREAD_LOCAL void (*IO_User_OutputMessage)(int kind, const char *file, int line, char *str, int len);
 
 #define IO__STRINGIFY(x) #x
 #define IO__TOSTRING(x) IO__STRINGIFY(x)

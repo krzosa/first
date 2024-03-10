@@ -31,7 +31,7 @@ IO_StaticFunc int IO_Strlen(char *string) {
     return len;
 }
 
-void (*IO_User_OutputMessage)(int kind, const char *file, int line, char *str, int len);
+IO_THREAD_LOCAL void (*IO_User_OutputMessage)(int kind, const char *file, int line, char *str, int len);
 
 IO_API bool IO__FatalErrorf(const char *file, int line, const char *msg, ...) {
     va_list args1;

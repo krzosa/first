@@ -12,9 +12,8 @@
 #define AND_CL_STRING_TERMINATE_ON_NEW_LINE
 #include "../standalone_libraries/clexer.c"
 
-MA_Arena PernamentArena;
-MA_Arena *Perm = &PernamentArena;
-Table<S8_String> CMDLine;
+thread_local MA_Arena PernamentArena;
+thread_local MA_Arena *Perm = &PernamentArena;
 
 #include "cache.cpp"
 #include "easy_strings.cpp"
