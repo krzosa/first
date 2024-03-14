@@ -7,16 +7,7 @@ int main(int argument_count, char **arguments) {
     IO_Printf("WORKING DIR: %.*s\n", S8_Expand(working_dir));
 
     Array<S8_String> cmd = CMD_Make(arguments, argument_count);
-    if (CMD_Match(cmd, "clear_cache")) {
-        for (OS_FileIter it = OS_IterateFiles(Perm, "./"); OS_IsValid(it); OS_Advance(&it)) {
-            if (!it.is_directory && S8_EndsWith(it.filename, ".cache", true)) {
-                OS_DeleteFile(it.absolute_path);
-            }
-        }
-        return 0;
-    }
-
-    S8_String cc = CMD_Get(cmd, "cc", IF_WINDOWS("cl") IF_MAC("clang") IF_LINUX("gcc"));
+    S8_String        cc  = CMD_Get(cmd, "cc", IF_WINDOWS("cl") IF_MAC("clang") IF_LINUX("gcc"));
 
     // Search for build file in the project directory
     S8_String build_file = {};
@@ -31,27 +22,25 @@ int main(int argument_count, char **arguments) {
             IO_Printf("Couldnt find build file in current dir: %.*s, exiting ... \n", S8_Expand(working_dir));
             IO_Printf("- Proper build file contains 'build_file.c' in it's name\n");
             IO_Printf("- Alternative compiler can be chosen like this: bld cc=clang\n");
-            IO_Printf("- Cache can be cleared like this: bld clear_cache\n");
             return 0;
         }
     }
 
     SRC_InitCache(Perm, "build_tool.cache");
     S8_String name_no_ext = S8_GetNameNoExt(build_file);
-    S8_String exe_name = S8_Format(Perm, "%.*s.exe", S8_Expand(name_no_ext));
+    S8_String exe_name    = S8_Format(Perm, "%.*s.exe", S8_Expand(name_no_ext));
 
     // Compile the build file only if code changed
     if (SRC_WasModified(build_file, exe_name)) {
-        double time = OS_GetTime();
-        int result = 0;
+        double time   = OS_GetTime();
+        int    result = 0;
         if (cc == "cl") {
             Array<S8_String> flags = {Perm};
             flags += "-nologo -Zi";
             flags += "-WX -W3 -wd4200 -diagnostics:column";
-            flags += Fmt("/Fe:%.*s", S8_Expand(exe_name));
+            flags += Fmt("/Fe:%.*s /Fd:%.*s.pdb", S8_Expand(exe_name), S8_Expand(exe_name));
             result = Run(cc + build_file + flags);
-        }
-        else if (cc == "clang") {
+        } else if (cc == "clang") {
             Array<S8_String> flags = {Perm};
             flags += "-std=c++11 -g";
             flags += "-fdiagnostics-absolute-paths";
@@ -61,8 +50,7 @@ int main(int argument_count, char **arguments) {
             flags += "-lm";
             flags += Fmt("-o %.*s", S8_Expand(exe_name));
             result = Run(cc + build_file + flags);
-        }
-        else {
+        } else {
             IO_Assert(cc == "gcc");
 
             Array<S8_String> flags = {Perm};
@@ -77,6 +65,7 @@ int main(int argument_count, char **arguments) {
 
         if (result != 0) {
             IO_Printf("FAILED compilation of the build file!\n");
+            OS_DeleteFile("build_tool.cache");
             return 1;
         }
         time = OS_GetTime() - time;
@@ -86,10 +75,11 @@ int main(int argument_count, char **arguments) {
     // Run the build file
     double time = OS_GetTime();
     if (build_file.str) {
-        exe_name = OS_GetAbsolutePath(Perm, exe_name);
+        exe_name   = OS_GetAbsolutePath(Perm, exe_name);
         int result = Run(exe_name + cmd);
         if (result != 0) {
             IO_Printf("FAILED execution of the build file!\n");
+            OS_DeleteFile("build_tool.cache");
             return 1;
         }
     }
