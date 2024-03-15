@@ -11,6 +11,7 @@
 #elif defined(__linux__)
     #define OS_POSIX 1
     #define OS_LINUX 1
+#elif OS_WASM
 #else
     #error Unsupported platform
 #endif
@@ -109,6 +110,8 @@
     #define OS_NAME "linux"
 #elif OS_MAC
     #define OS_NAME "mac_os"
+#elif OS_WASM
+    #define OS_NAME "wasm"
 #else
     #error couldnt figure out OS
 #endif

@@ -381,7 +381,7 @@ OS_API OS_Date OS_GetDate(void) {
     return result;
 }
 
-#else
+#elif __linux__ || __APPLE__ || __unix__
     #include <unistd.h>
     #include <limits.h>
     #include <sys/stat.h>
@@ -690,9 +690,9 @@ OS_API OS_Result OS_WriteFile(S8_String path, S8_String string) {
     return result;
 }
     #endif
-
 #endif
 
+#if _WIN32 || __linux__ || __APPLE__ || __unix__
 OS_API int OS_SystemF(const char *string, ...) {
     MA_Checkpoint scratch = MA_GetScratch();
     S8_FORMAT(scratch.arena, string, result);
@@ -746,3 +746,4 @@ OS_API S8_String OS_ExpandIncludes(MA_Arena *arena, S8_String filepath) {
     }
     return result;
 }
+#endif

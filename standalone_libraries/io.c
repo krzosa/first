@@ -203,9 +203,8 @@ IO_API IO_ErrorResult IO_OutputError(char *str, int len) {
 IO_API void IO_Exit(int error_code) {
     ExitProcess(error_code);
 }
-#else // _WIN32 else // LIBC
+#elif __linux__ || __unix__ || __APPLE__
     #include <stdio.h>
-
 IO_API IO_ErrorResult IO_OutputError(char *str, int len) {
     fprintf(stderr, "%.*s", len, str);
     return IO_ErrorResult_Exit;
@@ -222,4 +221,19 @@ IO_API void IO_Exit(int error_code) {
 IO_API bool IO_IsDebuggerPresent(void) {
     return false;
 }
+#else
+IO_API IO_ErrorResult IO_OutputError(char *str, int len) {
+    return IO_ErrorResult_Exit;
+}
+
+IO_API void IO_OutputMessage(char *str, int len) {
+}
+
+IO_API void IO_Exit(int error_code) {
+}
+
+IO_API bool IO_IsDebuggerPresent(void) {
+    return false;
+}
+
 #endif // LIBC

@@ -434,7 +434,7 @@ MA_API bool MV_DecommitPos(MV_Memory *m, size_t pos) {
     return false;
 }
 
-#else
+#elif __unix__ || __linux__ || __APPLE__
     #include <sys/mman.h>
     #define MV__UNIX_PAGE_SIZE 4096
 MA_API MV_Memory MV_Reserve(size_t size) {
@@ -465,4 +465,17 @@ MA_API void MV_Deallocate(MV_Memory *m) {
     int result = munmap(m->data, m->reserve);
     MA_Assertf(result == 0, "Failed to release virtual memory using munmap");
 }
+#else
+MA_API MV_Memory MV_Reserve(size_t size) {
+    MV_Memory result = {0};
+    return result;
+}
+
+MA_API bool MV_Commit(MV_Memory *m, size_t commit) {
+    return false;
+}
+
+MA_API void MV_Deallocate(MV_Memory *m) {
+}
+
 #endif
