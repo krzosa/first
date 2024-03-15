@@ -13,6 +13,15 @@ void AddBool(CmdParser *p, bool *result, const char *name, const char *help) {
     SLL_QUEUE_ADD(p->fdecl, p->ldecl, decl);
 }
 
+void AddInt(CmdParser *p, int *result, const char *name, const char *help) {
+    CmdDecl *decl    = MA_PushStruct(p->arena, CmdDecl);
+    decl->kind       = CmdDeclKind_Int;
+    decl->name       = S8_MakeFromChar((char *)name);
+    decl->help       = S8_MakeFromChar((char *)help);
+    decl->int_result = result;
+    SLL_QUEUE_ADD(p->fdecl, p->ldecl, decl);
+}
+
 void AddList(CmdParser *p, S8_List *result, const char *name, const char *help) {
     CmdDecl *decl     = MA_PushStruct(p->arena, CmdDecl);
     decl->kind        = CmdDeclKind_List;
@@ -65,7 +74,10 @@ void PrintCmdUsage(CmdParser *p) {
             IO_Printf("%-30.*s %.*s\n", S8_Expand(example), S8_Expand(it->help));
         } else if (it->kind == CmdDeclKind_Enum) {
             S8_String enum_vals = StrEnumValues(p->arena, it);
-            S8_String example = S8_Format(p->arena, "-%.*s %.*s", S8_Expand(it->name), S8_Expand(enum_vals));
+            S8_String example   = S8_Format(p->arena, "-%.*s %.*s", S8_Expand(it->name), S8_Expand(enum_vals));
+            IO_Printf("%-30.*s %.*s\n", S8_Expand(example), S8_Expand(it->help));
+        } else if (it->kind == CmdDeclKind_Int) {
+            S8_String example = S8_Format(p->arena, "-%.*s 8", S8_Expand(it->name));
             IO_Printf("%-30.*s %.*s\n", S8_Expand(example), S8_Expand(it->help));
         } else IO_Todo();
     }
@@ -96,8 +108,26 @@ bool ParseCmd(MA_Arena *arg_arena, CmdParser *p) {
 
             if (decl->kind == CmdDeclKind_Bool) {
                 *decl->bool_result = !*decl->bool_result;
+            } else if (decl->kind == CmdDeclKind_Int) {
+                if (i + 1 >= p->argc) {
+                    IO_Printf("expected at least 1 argument after %.*s\n", S8_Expand(arg));
+                    return false;
+                }
+                S8_String num = S8_MakeFromChar(p->argv[++i]);
+                for (int i = 0; i < num.len; i += 1) {
+                    if (!CHAR_IsDigit(num.str[i])) {
+                        IO_Printf("expected argument to be a number, got instead: %.*s", S8_Expand(num));
+                        return false;
+                    }
+                }
+                int count           = atoi(num.str);
+                decl->int_result[0] = count;
+
             } else if (decl->kind == CmdDeclKind_Enum) {
-                if (i + 1 >= p->argc) { IO_Printf("expected at least 1 argument after %.*s\n", S8_Expand(arg)); return false; }
+                if (i + 1 >= p->argc) {
+                    IO_Printf("expected at least 1 argument after %.*s\n", S8_Expand(arg));
+                    return false;
+                }
                 S8_String option_from_cmd = S8_MakeFromChar(p->argv[++i]);
 
                 bool found_option = false;
@@ -105,7 +135,7 @@ bool ParseCmd(MA_Arena *arg_arena, CmdParser *p) {
                     S8_String option = S8_MakeFromChar((char *)decl->enum_options[i]);
                     if (S8_AreEqual(option, option_from_cmd, true)) {
                         *decl->enum_result = i;
-                        found_option = true;
+                        found_option       = true;
                         break;
                     }
                 }
@@ -117,13 +147,19 @@ bool ParseCmd(MA_Arena *arg_arena, CmdParser *p) {
                 }
 
             } else if (decl->kind == CmdDeclKind_List) {
-                if (i + 1 >= p->argc) { IO_Printf("expected at least 1 argument after %.*s\n", S8_Expand(arg)); return false; }
+                if (i + 1 >= p->argc) {
+                    IO_Printf("expected at least 1 argument after %.*s\n", S8_Expand(arg));
+                    return false;
+                }
 
                 i += 1;
                 for (int counter = 0; i < p->argc; i += 1, counter += 1) {
                     S8_String arg = S8_MakeFromChar(p->argv[i]);
                     if (arg.str[0] == '-') {
-                        if (counter == 0) { IO_Printf("expected at least 1 argument after %.*s\n", S8_Expand(arg)); return false; }
+                        if (counter == 0) {
+                            IO_Printf("expected at least 1 argument after %.*s\n", S8_Expand(arg));
+                            return false;
+                        }
                         i -= 1;
                         break;
                     }
@@ -132,8 +168,7 @@ bool ParseCmd(MA_Arena *arg_arena, CmdParser *p) {
                 }
             } else IO_Todo();
 
-        }
-        else {
+        } else {
             if (p->require_one_standalone_arg && p->args.node_count == 0) {
                 S8_AddNode(arg_arena, &p->args, arg);
             } else {
@@ -162,19 +197,24 @@ void TestCmdParser() {
         "exe",
         "--build_scratch",
         "-tests",
-        "a", "b", "c",
-        "--things", "1234", "asdsa",
-        "-build", "release",
+        "a",
+        "b",
+        "c",
+        "--things",
+        "1234",
+        "asdsa",
+        "-build",
+        "release",
     };
     int argc = MA_Lengthof(argv);
 
-    MA_Checkpoint scratch = MA_GetScratch();
-    bool build_scratch = false;
-    S8_List test_list = {0};
-    S8_List test_things = {0};
-    int build_profile = 0;
-    const char *build_profiles[] = {"debug", "release"};
-    int build_profiles_count = MA_Lengthof(build_profiles);
+    MA_Checkpoint scratch              = MA_GetScratch();
+    bool          build_scratch        = false;
+    S8_List       test_list            = {0};
+    S8_List       test_things          = {0};
+    int           build_profile        = 0;
+    const char   *build_profiles[]     = {"debug", "release"};
+    int           build_profiles_count = MA_Lengthof(build_profiles);
 
     CmdParser p = MakeCmdParser(scratch.arena, argc, argv, "this is a test");
     AddBool(&p, &build_scratch, "build_scratch", "builds a sandbox where I experiment with things");

@@ -1,6 +1,7 @@
 
 typedef enum {
     CmdDeclKind_Bool,
+    CmdDeclKind_Int,
     CmdDeclKind_List,
     CmdDeclKind_Enum,
 } CmdDeclKind;
@@ -14,6 +15,7 @@ struct CmdDecl {
 
     bool    *bool_result;
     S8_List *list_result;
+    int     *int_result;
 
     int         *enum_result;
     const char **enum_options;
@@ -27,9 +29,9 @@ struct CmdParser {
     MA_Arena   *arena;
     const char *custom_help;
 
-    CmdDecl  *fdecl;
-    CmdDecl  *ldecl;
+    CmdDecl *fdecl;
+    CmdDecl *ldecl;
 
-    bool      require_one_standalone_arg;
-    S8_List   args;
+    bool    require_one_standalone_arg;
+    S8_List args;
 };
