@@ -55,6 +55,16 @@ typedef struct MA_SourceLoc MA_SourceLoc;
     #endif
 #endif
 
+#ifndef MA_MemoryZero
+    #include <string.h>
+    #define MA_MemoryZero(p, size) memset(p, 0, size)
+#endif
+
+#ifndef MA_MemoryCopy
+    #include <string.h>
+    #define MA_MemoryCopy(dst, src, size) memcpy(dst, src, size);
+#endif
+
 typedef enum M_AllocatorOp {
     M_AllocatorOp_Invalid,
     M_AllocatorOp_Allocate,
@@ -158,8 +168,6 @@ MA_API void            MA_PopSize(MA_Arena *arena, size_t size);
 MA_API void            MA_DeallocateArena(MA_Arena *arena);
 MA_API void            MA_Reset(MA_Arena *arena);
 
-MA_API void            MA_MemoryZero(void *p, size_t size);
-MA_API void            MA_MemoryCopy(void *dst, void *src, size_t size);
 MA_API size_t          MA_GetAlignOffset(size_t size, size_t align);
 MA_API size_t          MA_AlignUp(size_t size, size_t align);
 MA_API size_t          MA_AlignDown(size_t size, size_t align);

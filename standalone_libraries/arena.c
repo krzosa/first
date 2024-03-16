@@ -4,20 +4,6 @@
     #define MA_Assertf(x, ...) assert(x)
 #endif
 
-#ifndef MA_MemoryZero
-    #include <string.h>
-MA_API void MA_MemoryZero(void *p, size_t size) {
-    memset(p, 0, size);
-}
-#endif
-
-#ifndef MA_MemoryCopy
-    #include <string.h>
-MA_API void MA_MemoryCopy(void *dst, void *src, size_t size) {
-    memcpy(dst, src, size);
-}
-#endif
-
 #ifndef MA_CMalloc
     #include <stdlib.h>
     #define MA_CMalloc(x) malloc(x)
@@ -41,14 +27,14 @@ MA_API void MA_MemoryCopy(void *dst, void *src, size_t size) {
 #endif
 
 MA_THREAD_LOCAL MA_SourceLoc MA_SavedSourceLoc;
-MA_API void MA_SaveSourceLocEx(const char *file, int line) {
+MA_API void                  MA_SaveSourceLocEx(const char *file, int line) {
     MA_SavedSourceLoc.file = file;
     MA_SavedSourceLoc.line = line;
 }
 
 MA_API size_t MA_GetAlignOffset(size_t size, size_t align) {
     size_t mask = align - 1;
-    size_t val = size & mask;
+    size_t val  = size & mask;
     if (val) {
         val = align - val;
     }
@@ -67,10 +53,10 @@ MA_API size_t MA_AlignDown(size_t size, size_t align) {
 }
 
 MA_StaticFunc uint8_t *MV__AdvanceCommit(MV_Memory *m, size_t *commit_size, size_t page_size) {
-    size_t aligned_up_commit = MA_AlignUp(*commit_size, page_size);
-    size_t to_be_total_commited_size = aligned_up_commit + m->commit;
+    size_t aligned_up_commit                            = MA_AlignUp(*commit_size, page_size);
+    size_t to_be_total_commited_size                    = aligned_up_commit + m->commit;
     size_t to_be_total_commited_size_clamped_to_reserve = MA_CLAMP_TOP(to_be_total_commited_size, m->reserve);
-    size_t adjusted_to_boundary_commit = to_be_total_commited_size_clamped_to_reserve - m->commit;
+    size_t adjusted_to_boundary_commit                  = to_be_total_commited_size_clamped_to_reserve - m->commit;
     MA_Assertf(adjusted_to_boundary_commit, "Reached the virtual memory reserved boundary");
     *commit_size = adjusted_to_boundary_commit;
 
@@ -83,9 +69,9 @@ MA_StaticFunc uint8_t *MV__AdvanceCommit(MV_Memory *m, size_t *commit_size, size
 
 MA_API void MA_PopToPos(MA_Arena *arena, size_t pos) {
     MA_Assertf(arena->len >= arena->base_len, "Bug: arena->len shouldn't ever be smaller then arena->base_len");
-    pos = MA_CLAMP(pos, arena->base_len, arena->len);
+    pos         = MA_CLAMP(pos, arena->base_len, arena->len);
     size_t size = arena->len - pos;
-    arena->len = pos;
+    arena->len  = pos;
     ASAN_POISON_MEMORY_REGION(arena->memory.data + arena->len, size);
 }
 
@@ -103,7 +89,7 @@ MA_API void MA_Reset(MA_Arena *arena) {
 
 MA_StaticFunc size_t MA__AlignLen(MA_Arena *a) {
     size_t align_offset = a->alignment ? MA_GetAlignOffset((uintptr_t)a->memory.data + (uintptr_t)a->len, a->alignment) : 0;
-    size_t aligned = a->len + align_offset;
+    size_t aligned      = a->len + align_offset;
     return aligned;
 }
 
@@ -117,8 +103,8 @@ MA_API uint8_t *MA_GetTop(MA_Arena *a) {
 }
 
 MA_API void *MA__PushSizeNonZeroed(MA_Arena *a, size_t size) {
-    size_t align_offset = a->alignment ? MA_GetAlignOffset((uintptr_t)a->memory.data + (uintptr_t)a->len, a->alignment) : 0;
-    size_t aligned_len = a->len + align_offset;
+    size_t align_offset        = a->alignment ? MA_GetAlignOffset((uintptr_t)a->memory.data + (uintptr_t)a->len, a->alignment) : 0;
+    size_t aligned_len         = a->len + align_offset;
     size_t size_with_alignment = size + align_offset;
 
     if (a->len + size_with_alignment > a->memory.commit) {
@@ -163,10 +149,10 @@ MA_API void *MA__PushCopy(MA_Arena *arena, void *p, size_t size) {
 MA_API MA_Arena MA_PushArena(MA_Arena *arena, size_t size) {
     MA_Arena result;
     MA_MemoryZero(&result, sizeof(result));
-    result.memory.data = MA_PushArrayNonZeroed(arena, uint8_t, size);
-    result.memory.commit = size;
+    result.memory.data    = MA_PushArrayNonZeroed(arena, uint8_t, size);
+    result.memory.commit  = size;
     result.memory.reserve = size;
-    result.alignment = arena->alignment;
+    result.alignment      = arena->alignment;
     return result;
 }
 
@@ -187,26 +173,26 @@ MA_API void MA_MakeSureInitialized(MA_Arena *a) {
 }
 
 MA_API MA_Arena *MA_Bootstrap(void) {
-    MA_Arena bootstrap_arena = {0};
-    MA_Arena *arena = MA_PushStruct(&bootstrap_arena, MA_Arena);
-    *arena = bootstrap_arena;
-    arena->base_len = arena->len;
+    MA_Arena  bootstrap_arena = {0};
+    MA_Arena *arena           = MA_PushStruct(&bootstrap_arena, MA_Arena);
+    *arena                    = bootstrap_arena;
+    arena->base_len           = arena->len;
     return arena;
 }
 
 MA_API M_Allocator MA_BootstrapExclusive(void) {
-    MA_Arena bootstrap_arena = {0};
-    MA_Arena *arena = MA_PushStruct(&bootstrap_arena, MA_Arena);
-    *arena = bootstrap_arena;
-    arena->base_len = arena->len;
+    MA_Arena  bootstrap_arena = {0};
+    MA_Arena *arena           = MA_PushStruct(&bootstrap_arena, MA_Arena);
+    *arena                    = bootstrap_arena;
+    arena->base_len           = arena->len;
     return MA_GetExclusiveAllocator(arena);
 }
 
 MA_API void MA_InitFromBuffer(MA_Arena *arena, void *buffer, size_t size) {
-    arena->memory.data = (uint8_t *)buffer;
-    arena->memory.commit = size;
+    arena->memory.data    = (uint8_t *)buffer;
+    arena->memory.commit  = size;
     arena->memory.reserve = size;
-    arena->alignment = MA_DEFAULT_ALIGNMENT;
+    arena->alignment      = MA_DEFAULT_ALIGNMENT;
     ASAN_POISON_MEMORY_REGION(arena->memory.data, arena->memory.reserve);
 }
 
@@ -225,15 +211,15 @@ MA_API MA_Arena MA_Create() {
 
 MA_API bool MA_IsPointerInside(MA_Arena *arena, void *p) {
     uintptr_t pointer = (uintptr_t)p;
-    uintptr_t start = (uintptr_t)arena->memory.data;
-    uintptr_t stop = start + (uintptr_t)arena->len;
-    bool result = pointer >= start && pointer < stop;
+    uintptr_t start   = (uintptr_t)arena->memory.data;
+    uintptr_t stop    = start + (uintptr_t)arena->len;
+    bool      result  = pointer >= start && pointer < stop;
     return result;
 }
 
 MA_API MA_Checkpoint MA_Save(MA_Arena *arena) {
     MA_Checkpoint result;
-    result.pos = arena->len;
+    result.pos   = arena->len;
     result.arena = arena;
     return result;
 }
@@ -311,7 +297,7 @@ MA_API void *MA_ExclusiveAllocatorProc(void *allocator, M_AllocatorOp kind, void
     if (kind == M_AllocatorOp_Reallocate) {
         if (size > old_size) {
             size_t size_to_push = size - old_size;
-            void *result = MA__PushSizeNonZeroed(arena, size_to_push);
+            void  *result       = MA__PushSizeNonZeroed(arena, size_to_push);
             if (!p) p = result;
             return p;
         }
@@ -339,7 +325,7 @@ MA_API M_Allocator MA_GetAllocator(MA_Arena *arena) {
 MA_API M_Allocator M_GetSystemAllocator(void) {
     M_Allocator allocator;
     allocator.obj = 0;
-    allocator.p = M_ClibAllocatorProc;
+    allocator.p   = M_ClibAllocatorProc;
     return allocator;
 }
 
@@ -350,7 +336,7 @@ MA_API MA_Checkpoint MA_GetScratchEx(MA_Arena **conflicts, int conflict_count) {
     MA_Arena *unoccupied = 0;
     for (int i = 0; i < MA_Lengthof(MA_ScratchArenaPool); i += 1) {
         MA_Arena *from_pool = MA_ScratchArenaPool + i;
-        unoccupied = from_pool;
+        unoccupied          = from_pool;
         for (int conflict_i = 0; conflict_i < conflict_count; conflict_i += 1) {
             MA_Arena *from_conflict = conflicts[conflict_i];
             if (from_pool == from_conflict) {
@@ -395,7 +381,7 @@ MA_API MV_Memory MV_Reserve(size_t size) {
     MV_Memory result;
     MA_MemoryZero(&result, sizeof(result));
     size_t adjusted_size = MA_AlignUp(size, MV__WIN32_PAGE_SIZE);
-    result.data = (uint8_t *)VirtualAlloc(0, adjusted_size, MEM_RESERVE, PAGE_READWRITE);
+    result.data          = (uint8_t *)VirtualAlloc(0, adjusted_size, MEM_RESERVE, PAGE_READWRITE);
     MA_Assertf(result.data, "Failed to reserve virtual memory");
     result.reserve = adjusted_size;
     return result;
@@ -420,12 +406,12 @@ MA_API void MV_Deallocate(MV_Memory *m) {
 }
 
 MA_API bool MV_DecommitPos(MV_Memory *m, size_t pos) {
-    size_t aligned = MA_AlignDown(pos, MV__WIN32_PAGE_SIZE);
-    size_t adjusted_pos = MA_CLAMP_TOP(aligned, m->commit);
+    size_t aligned          = MA_AlignDown(pos, MV__WIN32_PAGE_SIZE);
+    size_t adjusted_pos     = MA_CLAMP_TOP(aligned, m->commit);
     size_t size_to_decommit = m->commit - adjusted_pos;
     if (size_to_decommit) {
         uint8_t *base_address = m->data + adjusted_pos;
-        BOOL result = VirtualFree(base_address, size_to_decommit, MEM_DECOMMIT);
+        BOOL     result       = VirtualFree(base_address, size_to_decommit, MEM_DECOMMIT);
         if (result) {
             m->commit -= size_to_decommit;
             return true;
