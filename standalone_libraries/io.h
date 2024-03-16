@@ -55,8 +55,8 @@ extern IO_THREAD_LOCAL void (*IO_User_OutputMessage)(int kind, const char *file,
 #define IO__TOSTRING(x) IO__STRINGIFY(x)
 #define IO_LINE IO__TOSTRING(__LINE__)
 
-#define IO_Assert(x) !(x) && IO__FatalError((char *)(__FILE__ "(" IO_LINE "): "      \
-                                                              "error: " #x "\n")) && \
+#define IO_Assert(x) !(x) && IO__FatalError((__FILE__ "(" IO_LINE "): "      \
+                                                      "error: " #x "\n")) && \
                          IO_DebugBreak()
 #define IO_FatalErrorf(...)                                             \
     do {                                                                \
@@ -85,22 +85,22 @@ extern IO_THREAD_LOCAL void (*IO_User_OutputMessage)(int kind, const char *file,
         IO_InvalidCodepath(); \
     }
 #define IO_InvalidCodepath() IO_FatalError("This codepath is invalid")
-#define IO_InvalidDefaultCase()                                 \
-    default: {                                                  \
-        IO_FatalError("Entered invalid switch statement case"); \
-    }
+#define IO_InvalidDefaultCase()                             \
+default: {                                                  \
+    IO_FatalError("Entered invalid switch statement case"); \
+}
 #define IO_Todo() IO_FatalError("This codepath is not implemented yet")
 
-IO_API bool IO__FatalErrorf(const char *file, int line, const char *msg, ...) IO__PrintfFormat(3, 4);
-IO_API void IO__Printf(int kind, const char *file, int line, const char *msg, ...) IO__PrintfFormat(4, 5);
-IO_API bool IO__FatalError(char *msg);
-IO_API void IO_Print(int kind, const char *file, int line, char *msg, int len);
-IO_API void IO_OutputMessage(char *str, int len);
+IO_API bool           IO__FatalErrorf(const char *file, int line, const char *msg, ...) IO__PrintfFormat(3, 4);
+IO_API void           IO__Printf(int kind, const char *file, int line, const char *msg, ...) IO__PrintfFormat(4, 5);
+IO_API bool           IO__FatalError(const char *msg);
+IO_API void           IO_Print(int kind, const char *file, int line, char *msg, int len);
+IO_API void           IO_OutputMessage(char *str, int len);
 IO_API IO_ErrorResult IO_OutputError(char *str, int len);
-IO_API void IO_Exit(int error_code);
-IO_API bool IO_IsDebuggerPresent(void);
+IO_API void           IO_Exit(int error_code);
+IO_API bool           IO_IsDebuggerPresent(void);
 
-static const int IO_KindPrintf = 1;
+static const int IO_KindPrintf   = 1;
 static const int IO_KindWarningf = 2;
 
 #define IO_Printf(...) IO__Printf(IO_KindPrintf, __FILE__, __LINE__, __VA_ARGS__)

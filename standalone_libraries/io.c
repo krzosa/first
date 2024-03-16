@@ -36,14 +36,14 @@ IO_THREAD_LOCAL void (*IO_User_OutputMessage)(int kind, const char *file, int li
 IO_API bool IO__FatalErrorf(const char *file, int line, const char *msg, ...) {
     va_list args1;
     va_list args2;
-    char buff[2048];
+    char    buff[2048];
 
     va_start(args1, msg);
     va_copy(args2, args1);
     int size = IO_VSNPRINTF(buff, sizeof(buff), msg, args2);
     va_end(args2);
 
-    char *new_buffer = 0;
+    char *new_buffer   = 0;
     char *user_message = buff;
     if (size >= sizeof(buff)) {
         size += 4;
@@ -55,14 +55,14 @@ IO_API bool IO__FatalErrorf(const char *file, int line, const char *msg, ...) {
 
     IO_ErrorResult ret = IO_ErrorResult_Continue;
     {
-        char buff2[2048];
+        char  buff2[2048];
         char *result = buff2;
-        char *b = 0;
-        int size2 = IO_SNPRINTF(buff2, sizeof(buff2), "%s(%d): error: %s \n", file, line, user_message);
+        char *b      = 0;
+        int   size2  = IO_SNPRINTF(buff2, sizeof(buff2), "%s(%d): error: %s \n", file, line, user_message);
         if (size2 >= sizeof(buff2)) {
             size2 += 4;
-            b = (char *)IO_ALLOCATE(size2);
-            size2 = IO_SNPRINTF(b, size2, "%s(%d): error: %s \n", file, line, user_message);
+            b      = (char *)IO_ALLOCATE(size2);
+            size2  = IO_SNPRINTF(b, size2, "%s(%d): error: %s \n", file, line, user_message);
             result = b;
         }
 
@@ -89,7 +89,7 @@ IO_API void IO__Printf(int kind, const char *file, int line, const char *msg, ..
     // case.
     va_list args1;
     va_list args2;
-    char buff[2048];
+    char    buff[2048];
 
     va_start(args1, msg);
     va_copy(args2, args1);
@@ -97,7 +97,7 @@ IO_API void IO__Printf(int kind, const char *file, int line, const char *msg, ..
     va_end(args2);
 
     char *new_buffer = 0;
-    char *result = buff;
+    char *result     = buff;
     if (size >= sizeof(buff)) {
         size += 4;
         new_buffer = (char *)IO_ALLOCATE(size);
@@ -108,8 +108,7 @@ IO_API void IO__Printf(int kind, const char *file, int line, const char *msg, ..
 
     if (IO_User_OutputMessage) {
         IO_User_OutputMessage(kind, file, line, result, size);
-    }
-    else {
+    } else {
         IO_OutputMessage(result, size);
     }
 
@@ -118,9 +117,9 @@ IO_API void IO__Printf(int kind, const char *file, int line, const char *msg, ..
     }
 }
 
-IO_API bool IO__FatalError(char *msg) {
-    int len = IO_Strlen(msg);
-    IO_ErrorResult result = IO_OutputError(msg, len);
+IO_API bool IO__FatalError(const char *msg) {
+    int            len    = IO_Strlen((char *)msg);
+    IO_ErrorResult result = IO_OutputError((char *)msg, len);
     if (result == IO_ErrorResult_Exit) {
         IO_Exit(1);
     }
@@ -130,8 +129,7 @@ IO_API bool IO__FatalError(char *msg) {
 IO_API void IO_Print(int kind, const char *file, int line, char *msg, int len) {
     if (IO_User_OutputMessage) {
         IO_User_OutputMessage(kind, file, line, msg, len);
-    }
-    else {
+    } else {
         IO_OutputMessage(msg, len);
     }
 }
@@ -177,7 +175,7 @@ IO_API IO_ErrorResult IO_OutputError(char *str, int len) {
         // Limit size of error output message
         char tmp = 0;
         if (len > 4096) {
-            tmp = str[4096];
+            tmp       = str[4096];
             str[4096] = 0;
         }
 
@@ -188,8 +186,7 @@ IO_API IO_ErrorResult IO_OutputError(char *str, int len) {
         }
 
         result = IO_ErrorResult_Exit;
-    }
-    else {
+    } else {
         result = IO_ErrorResult_Break;
     }
 
