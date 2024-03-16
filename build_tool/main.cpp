@@ -42,22 +42,21 @@ int main(int argument_count, char **arguments) {
             result = Run(cc + build_file + flags);
         } else if (cc == "clang") {
             Array<S8_String> flags = {Perm};
+            cc                     = "clang++";
+
             flags += "-std=c++11 -g";
             flags += "-fdiagnostics-absolute-paths";
             flags += "-Wno-writable-strings";
-            flags += "-fno-exceptions";
-            flags += "-fno-rtti";
             flags += "-lm";
             flags += Fmt("-o %.*s", S8_Expand(exe_name));
             result = Run(cc + build_file + flags);
         } else {
             IO_Assert(cc == "gcc");
+            cc = "g++";
 
             Array<S8_String> flags = {Perm};
             flags += "-std=c++11 -g";
             flags += "-Wno-write-strings";
-            flags += "-fno-exceptions";
-            flags += "-fno-rtti";
             flags += "-lm";
             flags += Fmt("-o %.*s", S8_Expand(exe_name));
             result = Run(cc + build_file + flags);
