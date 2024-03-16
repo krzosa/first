@@ -20,7 +20,6 @@ int main() {
     TestBootstrapExclusive();
     TestBootstrapArenaClear();
 
-    // @todo: github worker fails on this:
     TestClexer();
 
     // Unicode iteration over codepoints using For
